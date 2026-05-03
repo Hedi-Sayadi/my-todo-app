@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart ToDo App Prototype</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .board {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .column {
+      flex: 1;
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 250px;
+    }
+
+    .column h4 {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .task {
+      background: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      cursor: grab;
+    }
+
+    .task:active {
+      cursor: grabbing;
+    }
+
+    .high { border-left: 5px solid #ef4444; }
+    .medium { border-left: 5px solid #f59e0b; }
+    .low { border-left: 5px solid #10b981; }
+
+    .hint {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Smart ToDo App</h1>
+  <p>Prototype — Drag & Drop Task Board (Week 3)</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Task Board (Drag & Drop Mock)</h3>
+
+    <div class="board">
+
+      <!-- TODO -->
+      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h4>To Do</h4>
+
+        <div class="task high" draggable="true" ondragstart="drag(event)" id="t1">
+          Finish requirements engineering
+        </div>
+
+        <div class="task medium" draggable="true" ondragstart="drag(event)" id="t2">
+          Design system architecture
+        </div>
+      </div>
+
+      <!-- IN PROGRESS -->
+      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h4>In Progress</h4>
+
+        <div class="task medium" draggable="true" ondragstart="drag(event)" id="t3">
+          Create HTML prototype
+        </div>
+      </div>
+
+      <!-- DONE -->
+      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h4>Done</h4>
+      </div>
+
+    </div>
+
+    <p class="hint">
+      Prototype only — drag tasks between columns (UI simulation)
+    </p>
+  </div>
+
+</div>
+
+<script>
+  function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+  }
+
+  function allowDrop(ev) {
+    ev.preventDefault();
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    ev.target.closest(".column").appendChild(document.getElementById(data));
+  }
+</script>
+
+</body>
+</html>
