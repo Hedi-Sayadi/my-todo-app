@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: todo-postgres
+    restart: always
+
+    environment:
+      POSTGRES_DB: todo_app
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: TodoApp@2026
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: todo-pgadmin
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin.todo@uni-passau.de
+      PGADMIN_DEFAULT_PASSWORD: PgAdmin@2026
+
+    ports:
+      - "5050:80"
+
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
