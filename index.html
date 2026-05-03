@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart ToDo App Prototype</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin-top: 6px;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .input-section {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 12px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .add-btn {
+      background: #2563eb;
+      color: white;
+    }
+
+    .filters {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .filter-btn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .filter-btn.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #eee;
+    }
+
+    .task-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .task-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .task-meta {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .priority {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .high { background: #fee2e2; color: #b91c1c; }
+    .medium { background: #fef3c7; color: #92400e; }
+    .low { background: #dcfce7; color: #166534; }
+
+    .actions button {
+      margin-left: 6px;
+      font-size: 12px;
+    }
+
+    .done-btn {
+      background: #10b981;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #ef4444;
+      color: white;
+    }
+
+    .completed .task-title {
+      text-decoration: line-through;
+      color: #9ca3af;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Smart ToDo App</h1>
+  <p>Prototype UI — Week 3 (Prototyping)</p>
+</header>
+
+<div class="container">
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <h3>Add New Task</h3>
+
+    <div class="input-section">
+      <input type="text" placeholder="What do you need to do?" />
+      <button class="add-btn">Add Task</button>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Pending</button>
+      <button class="filter-btn">Completed</button>
+    </div>
+  </div>
+
+  <!-- TASK LIST -->
+  <div class="card">
+    <h3>Your Tasks</h3>
+
+    <ul>
+
+      <li>
+        <div class="task-info">
+          <span class="task-title">Finish requirement engineering</span>
+          <span class="task-meta">Due: 2026-05-08</span>
+          <span class="priority high">High Priority</span>
+        </div>
+        <div class="actions">
+          <button class="done-btn">Done</button>
+          <button class="delete-btn">Delete</button>
+        </div>
+      </li>
+
+      <li>
+        <div class="task-info">
+          <span class="task-title">Design system architecture</span>
+          <span class="task-meta">Due: 2026-05-08</span>
+          <span class="priority medium">Medium Priority</span>
+        </div>
+        <div class="actions">
+          <button class="done-btn">Done</button>
+          <button class="delete-btn">Delete</button>
+        </div>
+      </li>
+
+      <li class="completed">
+        <div class="task-info">
+          <span class="task-title">Create HTML prototype</span>
+          <span class="task-meta">Completed</span>
+          <span class="priority low">Low Priority</span>
+        </div>
+        <div class="actions">
+          <button class="done-btn">Undo</button>
+          <button class="delete-btn">Delete</button>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  ToDo App Prototype — Designed for AI-Driven Software Engineering Course
+</footer>
+
+</body>
+</html>
