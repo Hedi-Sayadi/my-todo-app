@@ -1,0 +1,21 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  background: var(--bg);
+}
+
+.main {
+  padding: 24px;
+}
+
+.content {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.6);
+  padding: 18px;
+  border-radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .content { background: rgba(22,23,29,0.6); }
+}

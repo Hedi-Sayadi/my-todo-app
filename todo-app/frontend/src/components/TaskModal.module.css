@@ -1,0 +1,247 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  animation: fadeIn 200ms ease;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 540px;
+  max-height: 90vh;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  animation: slideIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translate(-50%, -48%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid rgba(229, 228, 231, 0.9);
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.closeButton {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.closeButton:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-h);
+}
+
+.form {
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.formGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input,
+.select,
+.textarea {
+  padding: 12px 14px;
+  border: 1px solid rgba(229, 228, 231, 0.9);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 14px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: rgba(229, 228, 231, 0.95);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: rgba(170, 59, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(170, 59, 255, 0.08);
+}
+
+.textarea {
+  resize: none;
+  font-family: inherit;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 12px;
+}
+
+.buttonPrimary,
+.buttonSecondary {
+  appearance: none;
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.buttonPrimary {
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  color: white;
+  box-shadow: 0 12px 24px rgba(170, 59, 255, 0.28);
+}
+
+.buttonPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(170, 59, 255, 0.36);
+}
+
+.buttonSecondary {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-h);
+}
+
+.buttonSecondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 640px) {
+  .modal {
+    width: 95%;
+    max-width: calc(100vw - 20px);
+  }
+
+  .header {
+    padding: 18px;
+  }
+
+  .form {
+    padding: 18px;
+  }
+
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .footer {
+    gap: 10px;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .backdrop {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .modal {
+    background: rgba(22, 23, 29, 0.95);
+  }
+
+  .header {
+    border-bottom-color: rgba(46, 48, 58, 0.9);
+  }
+
+  .input,
+  .select,
+  .textarea {
+    background: rgba(31, 32, 40, 0.8);
+    border-color: rgba(46, 48, 58, 0.9);
+  }
+
+  .input:hover,
+  .select:hover,
+  .textarea:hover {
+    border-color: rgba(46, 48, 58, 0.95);
+  }
+
+  .buttonSecondary {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .buttonSecondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
