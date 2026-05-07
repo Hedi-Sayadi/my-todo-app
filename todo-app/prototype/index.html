@@ -3,147 +3,826 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart ToDo App Prototype</title>
-
+  <title>TodoFlow — Smart Task Dashboard</title>
   <style>
-    body {
+    :root {
+      --accent: #aa3bff;
+      --text-h: #1f2937;
+      --text: #6b7280;
+      --border: #e5e4e7;
+      --bg: #ffffff;
+      --shadow: 0 10px 24px rgba(8, 6, 13, 0.06);
+    }
+
+    * {
       margin: 0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f5f7fb;
-      color: #1f2937;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    header {
-      background: linear-gradient(135deg, #2563eb, #1e40af);
-      color: white;
-      padding: 24px;
-      text-align: center;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: 
+        radial-gradient(circle at top left, rgba(170, 59, 255, 0.14), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(170, 59, 255, 0.08), transparent 30%),
+        var(--bg);
+      color: var(--text-h);
+      line-height: 1.6;
     }
 
-    .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
     }
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-    }
-
-    .board {
+    /* Sidebar */
+    .sidebar {
       display: flex;
-      gap: 15px;
-      margin-top: 10px;
+      flex-direction: column;
+      gap: 24px;
+      padding: 28px 22px;
+      border-right: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      height: 100vh;
     }
 
-    .column {
-      flex: 1;
-      background: #f9fafb;
-      border-radius: 10px;
-      padding: 10px;
-      min-height: 250px;
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
-    .column h4 {
-      text-align: center;
-      margin: 10px 0;
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 12px 24px rgba(170, 59, 255, 0.24);
     }
 
-    .task {
-      background: white;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      cursor: grab;
+    .brand-title {
+      margin: 2px 0 0;
+      font-size: 20px;
+      line-height: 1.1;
     }
 
-    .task:active {
-      cursor: grabbing;
-    }
-
-    .high { border-left: 5px solid #ef4444; }
-    .medium { border-left: 5px solid #f59e0b; }
-    .low { border-left: 5px solid #10b981; }
-
-    .hint {
+    .brand-subtitle {
+      margin: 0;
+      color: var(--text);
       font-size: 12px;
-      color: #6b7280;
-      text-align: center;
-      margin-top: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-item {
+      appearance: none;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: left;
+      font: inherit;
+      font-weight: 600;
+      color: var(--text-h);
+      background: transparent;
+      cursor: pointer;
+      transition: all 160ms ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item:hover {
+      background: rgba(170, 59, 255, 0.08);
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      background: rgba(170, 59, 255, 0.12);
+      border-color: rgba(170, 59, 255, 0.18);
+    }
+
+    .nav-icon {
+      font-size: 16px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      display: grid;
+      gap: 6px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(244, 243, 236, 0.72);
+      border: 1px solid rgba(229, 228, 231, 0.8);
+    }
+
+    .sidebar-footer p {
+      margin: 0;
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .sidebar-footer strong {
+      font-size: 20px;
+      color: var(--text-h);
+    }
+
+    /* Main */
+    .main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      display: grid;
+      grid-template-columns: 200px 1fr 200px;
+      gap: 24px;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-h);
+    }
+
+    .header-center {
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 24px;
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid transparent;
+      width: 100%;
+      max-width: 360px;
+      transition: all 160ms ease;
+    }
+
+    .search-box:focus-within {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(170, 59, 255, 0.3);
+      box-shadow: 0 0 0 3px rgba(170, 59, 255, 0.08);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text-h);
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      justify-content: flex-end;
+    }
+
+    /* Content */
+    .content {
+      flex: 1;
+      padding: 28px;
+      overflow-y: auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text-h);
+    }
+
+    .section-eyebrow {
+      margin: 0;
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 6px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(229, 228, 231, 0.9);
+      box-shadow: 0 10px 24px rgba(8, 6, 13, 0.06);
+    }
+
+    .summary-label {
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .summary-value {
+      color: var(--text-h);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .recommended-section,
+    .task-section {
+      display: grid;
+      gap: 14px;
+    }
+
+    /* Recommended Task Card */
+    .recommended-card {
+      padding: 28px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.72));
+      border: 2px solid rgba(170, 59, 255, 0.25);
+      box-shadow: 0 20px 40px rgba(170, 59, 255, 0.12);
+      transition: all 240ms ease;
+    }
+
+    .recommended-card:hover {
+      box-shadow: 0 28px 48px rgba(170, 59, 255, 0.18);
+      transform: translateY(-2px);
+      border-color: rgba(170, 59, 255, 0.4);
+    }
+
+    .recommended-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .recommended-title {
+      margin: 6px 0 0;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--text-h);
+    }
+
+    .priority-badge {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .priority-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .priority-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .priority-low { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+
+    .recommended-desc {
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 14px 0;
+    }
+
+    .task-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 18px 0;
+      padding-top: 18px;
+      border-top: 1px solid rgba(229, 228, 231, 0.5);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .meta-label {
+      color: var(--text);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .meta-value {
+      color: var(--text-h);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .start-button {
+      appearance: none;
+      border: 0;
+      padding: 14px 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      color: white;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 18px;
+      width: 100%;
+      transition: all 160ms ease;
+      box-shadow: 0 12px 24px rgba(170, 59, 255, 0.28);
+    }
+
+    .start-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(170, 59, 255, 0.36);
+    }
+
+    /* Task Grid */
+    .task-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .task-card {
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(229, 228, 231, 0.9);
+      box-shadow: 0 10px 24px rgba(8, 6, 13, 0.06);
+      transition: all 160ms ease;
+    }
+
+    .task-card:hover {
+      box-shadow: 0 16px 32px rgba(8, 6, 13, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .task-card.completed {
+      opacity: 0.6;
+    }
+
+    .task-card.completed .task-title {
+      text-decoration: line-through;
+    }
+
+    .task-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .task-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .task-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-h);
+      margin: 0;
+      flex: 1;
+    }
+
+    .task-desc {
+      color: var(--text);
+      font-size: 13px;
+      margin: 8px 0;
+    }
+
+    .task-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-small {
+      appearance: none;
+      border: 1px solid rgba(229, 228, 231, 0.9);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.02);
+      color: var(--text-h);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 160ms ease;
+      flex: 1;
+    }
+
+    .btn-small:hover {
+      background: rgba(170, 59, 255, 0.08);
+      border-color: rgba(170, 59, 255, 0.3);
+    }
+
+    /* Floating Action */
+    .floating-action {
+      position: fixed;
+      right: 32px;
+      bottom: 32px;
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 16px 30px rgba(170, 59, 255, 0.28);
+      transition: all 160ms ease;
+    }
+
+    .floating-action:hover {
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 20px 40px rgba(170, 59, 255, 0.36);
+    }
+
+    @media (max-width: 1024px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .header {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .task-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .content {
+        padding: 18px;
+        gap: 18px;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .header {
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+
+      .header-left h2 {
+        font-size: 14px;
+      }
+
+      .search-box {
+        display: none;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .summary-card {
+        padding: 12px 14px;
+      }
+
+      .summary-label {
+        font-size: 10px;
+      }
+
+      .summary-value {
+        font-size: 22px;
+      }
+
+      .recommended-card {
+        padding: 20px;
+      }
+
+      .task-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .floating-action {
+        right: 16px;
+        bottom: 16px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161723;
+      }
+
+      .sidebar {
+        background: rgba(22, 23, 29, 0.82);
+      }
+
+      .header {
+        background: rgba(22, 23, 29, 0.82);
+      }
+
+      .search-box {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .search-box:focus-within {
+        background: rgba(31, 32, 40, 0.9);
+        border-color: rgba(170, 59, 255, 0.4);
+      }
+
+      .summary-card {
+        background: rgba(31, 32, 40, 0.6);
+        border-color: rgba(46, 48, 58, 0.9);
+      }
+
+      .recommended-card {
+        background: linear-gradient(135deg, rgba(31, 32, 40, 0.9), rgba(22, 23, 29, 0.82));
+        border-color: rgba(170, 59, 255, 0.3);
+      }
+
+      .task-card {
+        background: rgba(31, 32, 40, 0.6);
+        border-color: rgba(46, 48, 58, 0.9);
+      }
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <h1>Smart ToDo App</h1>
-  <p>Prototype — Drag & Drop Task Board (Week 3)</p>
-</header>
-
-<div class="container">
-
-  <div class="card">
-    <h3>Task Board (Drag & Drop Mock)</h3>
-
-    <div class="board">
-
-      <!-- TODO -->
-      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
-        <h4>To Do</h4>
-
-        <div class="task high" draggable="true" ondragstart="drag(event)" id="t1">
-          Finish requirements engineering
-        </div>
-
-        <div class="task medium" draggable="true" ondragstart="drag(event)" id="t2">
-          Design system architecture
-        </div>
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-mark">T</div>
+      <div>
+        <p class="brand-subtitle">Smart Productivity</p>
+        <h1 class="brand-title">TodoFlow</h1>
       </div>
-
-      <!-- IN PROGRESS -->
-      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
-        <h4>In Progress</h4>
-
-        <div class="task medium" draggable="true" ondragstart="drag(event)" id="t3">
-          Create HTML prototype
-        </div>
-      </div>
-
-      <!-- DONE -->
-      <div class="column" ondragover="allowDrop(event)" ondrop="drop(event)">
-        <h4>Done</h4>
-      </div>
-
     </div>
 
-    <p class="hint">
-      Prototype only — drag tasks between columns (UI simulation)
-    </p>
-  </div>
+    <nav class="nav">
+      <button class="nav-item active">
+        <span class="nav-icon">◩</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">☰</span>
+        <span>Tasks</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◌</span>
+        <span>Categories</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">◷</span>
+        <span>Reminders</span>
+      </button>
+      <button class="nav-item">
+        <span class="nav-icon">⚙</span>
+        <span>Settings</span>
+      </button>
+    </nav>
 
+    <div class="sidebar-footer">
+      <p>Today</p>
+      <strong>12 tasks</strong>
+      <span style="color: var(--text); font-size: 14px;">4 due this week</span>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h2>Task Dashboard</h2>
+      </div>
+      <div class="header-center">
+        <div class="search-box">
+          <input type="text" placeholder="Search tasks..." />
+        </div>
+      </div>
+      <div class="header-right">
+        <button style="appearance: none; border: 1px solid transparent; border-radius: 12px; padding: 8px; background: transparent; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          🔔
+        </button>
+        <button style="appearance: none; border: 2px solid rgba(170, 59, 255, 0.3); border-radius: 12px; padding: 6px; background: linear-gradient(135deg, rgba(170, 59, 255, 0.2), rgba(109, 40, 217, 0.2)); cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--accent);">
+          JD
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Summary -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">All tasks</span>
+          <strong class="summary-value">4</strong>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Completed</span>
+          <strong class="summary-value">1</strong>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Remaining</span>
+          <strong class="summary-value">3</strong>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Due soon</span>
+          <strong class="summary-value">3</strong>
+        </div>
+      </div>
+
+      <!-- Recommended Task -->
+      <section class="recommended-section">
+        <div class="recommended-card">
+          <div class="recommended-header">
+            <div>
+              <p class="section-eyebrow">Recommended for you</p>
+              <h3 class="recommended-title">Plan project roadmap</h3>
+            </div>
+            <div class="priority-badge priority-high">HIGH</div>
+          </div>
+          <p class="recommended-desc">Break the todo app into milestones for authentication, task management, and polish.</p>
+          <div class="task-meta">
+            <div class="meta-item">
+              <span class="meta-label">Category</span>
+              <span class="meta-value">Planning</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Due</span>
+              <span class="meta-value">May 21, 2026</span>
+            </div>
+          </div>
+          <button class="start-button">Start Task →</button>
+        </div>
+      </section>
+
+      <!-- Tasks -->
+      <section class="task-section">
+        <div>
+          <p class="section-eyebrow">Task List</p>
+          <h3 style="margin: 4px 0 0; font-size: 22px; line-height: 1.2;">All tasks</h3>
+        </div>
+
+        <div class="task-grid">
+          <!-- Task 1 -->
+          <div class="task-card">
+            <div class="task-header">
+              <input type="checkbox" class="task-checkbox" />
+              <h4 class="task-title">Plan project roadmap</h4>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="priority-badge priority-high" style="margin: 0;">HIGH</span>
+              <span style="color: var(--text); font-size: 12px; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px;">Planning</span>
+            </div>
+            <p class="task-desc">Break the todo app into milestones for authentication, task management, and polish.</p>
+            <div style="border-top: 1px solid rgba(229, 228, 231, 0.5); padding-top: 12px; margin-top: 12px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span><strong>Deadline:</strong> May 21, 2026</span>
+              </div>
+            </div>
+            <div class="task-buttons">
+              <button class="btn-small">Edit</button>
+              <button class="btn-small">Delete</button>
+            </div>
+          </div>
+
+          <!-- Task 2 (Completed) -->
+          <div class="task-card completed">
+            <div class="task-header">
+              <input type="checkbox" class="task-checkbox" checked />
+              <h4 class="task-title">Set up initial component structure</h4>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="priority-badge priority-medium" style="margin: 0;">MEDIUM</span>
+              <span style="color: var(--text); font-size: 12px; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px;">Setup</span>
+            </div>
+            <p class="task-desc">Created reusable components and a task model for the frontend.</p>
+            <div style="border-top: 1px solid rgba(229, 228, 231, 0.5); padding-top: 12px; margin-top: 12px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span><strong>Deadline:</strong> May 08, 2026</span>
+              </div>
+            </div>
+            <div class="task-buttons">
+              <button class="btn-small">Edit</button>
+              <button class="btn-small">Delete</button>
+            </div>
+          </div>
+
+          <!-- Task 3 -->
+          <div class="task-card">
+            <div class="task-header">
+              <input type="checkbox" class="task-checkbox" />
+              <h4 class="task-title">Draft the task creation flow</h4>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="priority-badge priority-low" style="margin: 0;">LOW</span>
+              <span style="color: var(--text); font-size: 12px; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px;">UX</span>
+            </div>
+            <p class="task-desc">Design a minimal modal or panel for adding new tasks quickly.</p>
+            <div style="border-top: 1px solid rgba(229, 228, 231, 0.5); padding-top: 12px; margin-top: 12px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span><strong>Deadline:</strong> May 14, 2026</span>
+              </div>
+            </div>
+            <div class="task-buttons">
+              <button class="btn-small">Edit</button>
+              <button class="btn-small">Delete</button>
+            </div>
+          </div>
+
+          <!-- Task 4 -->
+          <div class="task-card">
+            <div class="task-header">
+              <input type="checkbox" class="task-checkbox" />
+              <h4 class="task-title">Review state management approach</h4>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="priority-badge priority-medium" style="margin: 0;">MEDIUM</span>
+              <span style="color: var(--text); font-size: 12px; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px;">Architecture</span>
+            </div>
+            <p class="task-desc">Compare local state, context, or a lightweight store for the next step.</p>
+            <div style="border-top: 1px solid rgba(229, 228, 231, 0.5); padding-top: 12px; margin-top: 12px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span><strong>Deadline:</strong> May 18, 2026</span>
+              </div>
+            </div>
+            <div class="task-buttons">
+              <button class="btn-small">Edit</button>
+              <button class="btn-small">Delete</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
 </div>
 
-<script>
-  function drag(ev) {
-    ev.dataTransfer.setData("text", ev.target.id);
-  }
-
-  function allowDrop(ev) {
-    ev.preventDefault();
-  }
-
-  function drop(ev) {
-    ev.preventDefault();
-    const data = ev.dataTransfer.getData("text");
-    ev.target.closest(".column").appendChild(document.getElementById(data));
-  }
-</script>
+<!-- Floating Action -->
+<button class="floating-action">+</button>
 
 </body>
 </html>
