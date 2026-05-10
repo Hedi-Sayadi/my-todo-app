@@ -1,51 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import type { Task } from '../types/task'
 import TaskCard from '../components/TaskCard'
 import RecommendedTask from '../components/RecommendedTask'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
+import { listTasks } from '../services/taskService'
 import styles from './Dashboard.module.css'
-
-const tasks: Task[] = [
-	{
-		id: 1,
-		title: 'Plan project roadmap',
-		description:
-			'Break the todo app into milestones for authentication, task management, and polish.',
-		priority: 'HIGH',
-		deadline: '2026-05-21',
-		category: 'Planning',
-		status: 'TODO',
-	},
-	{
-		id: 2,
-		title: 'Set up initial component structure',
-		description: 'Created reusable components and a task model for the frontend.',
-		priority: 'MEDIUM',
-		deadline: '2026-05-08',
-		category: 'Setup',
-		status: 'DONE',
-	},
-	{
-		id: 3,
-		title: 'Draft the task creation flow',
-		description: 'Design a minimal modal or panel for adding new tasks quickly.',
-		priority: 'LOW',
-		deadline: '2026-05-14',
-		category: 'UX',
-		status: 'IN_PROGRESS',
-	},
-	{
-		id: 4,
-		title: 'Review state management approach',
-		description: 'Compare local state, context, or a lightweight store for the next step.',
-		priority: 'MEDIUM',
-		deadline: '2026-05-18',
-		category: 'Architecture',
-		status: 'TODO',
-	},
-]
 
 function Dashboard() {
 	const location = useLocation()
@@ -61,9 +22,42 @@ function Dashboard() {
 
 	const [query, setQuery] = useState('')
 	const [activeItem, setActiveItem] = useState(() => mapPathToItem(location.pathname))
+	const [tasks, setTasks] = useState<Task[]>([])
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState('')
 	useEffect(() => {
 		setActiveItem(mapPathToItem(location.pathname))
 	}, [location.pathname])
+
+	useEffect(() => {
+		let isMounted = true
+
+		const loadTasks = async () => {
+			try {
+				setIsLoading(true)
+				setError('')
+				const data = await listTasks()
+
+				if (isMounted) {
+					setTasks(data)
+				}
+			} catch (loadError) {
+				if (isMounted) {
+					setError(loadError instanceof Error ? loadError.message : 'Failed to load tasks')
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false)
+				}
+			}
+		}
+
+		void loadTasks()
+
+		return () => {
+			isMounted = false
+		}
+	}, [])
 
 	const todoCount = tasks.filter((task) => task.status === 'TODO').length
 	const inProgressCount = tasks.filter((task) => task.status === 'IN_PROGRESS').length
@@ -106,10 +100,24 @@ function Dashboard() {
 				</section>
 
 				<section className={styles.recommendedSection}>
-					<RecommendedTask
-						task={recommendedTask}
-						reason="Based on priority and deadline, this task needs your focus first."
-					/>
+					{error ? (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>{error}</p>
+						</div>
+					) : isLoading ? (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>Loading task overview...</p>
+						</div>
+					) : recommendedTask ? (
+						<RecommendedTask
+							task={recommendedTask}
+							reason="Based on priority and deadline, this task needs your focus first."
+						/>
+					) : (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>No tasks yet. Create one in the Tasks page to get started.</p>
+						</div>
+					)}
 				</section>
 
 				<section className={styles.taskSection}>
@@ -121,14 +129,20 @@ function Dashboard() {
 						<span className={styles.taskCount}>{filteredTasks.length} shown</span>
 					</div>
 
-					<div className={styles.taskGrid}>
-						{filteredTasks.map((task) => (
-							<TaskCard
-								key={task.id}
-								task={task}
-							/>
-						))}
-					</div>
+					{!isLoading && !error && filteredTasks.length > 0 ? (
+						<div className={styles.taskGrid}>
+							{filteredTasks.map((task) => (
+								<TaskCard
+									key={task.id}
+									task={task}
+								/>
+							))}
+						</div>
+					) : !isLoading && !error ? (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>No tasks match your search.</p>
+						</div>
+					) : null}
 				</section>
 			</main>
 

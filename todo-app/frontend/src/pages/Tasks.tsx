@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
 	DndContext,
 	closestCorners,
@@ -14,53 +14,51 @@ import TaskModal from '../components/TaskModal'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
 import KanbanColumn from '../components/KanbanColumn'
+import {
+	createTask,
+	deleteTask,
+	listTasks,
+	updateTask as updateTaskRequest,
+} from '../services/taskService'
 import styles from './TasksPage.module.css'
 
-const initialTasks: Task[] = [
-	{
-		id: 1,
-		title: 'Plan project roadmap',
-		description:
-			'Break the todo app into milestones for authentication, task management, and polish.',
-		priority: 'HIGH',
-		deadline: '2026-05-21',
-		category: 'Planning',
-		status: 'TODO',
-	},
-	{
-		id: 2,
-		title: 'Set up initial component structure',
-		description: 'Created reusable components and a task model for the frontend.',
-		priority: 'MEDIUM',
-		deadline: '2026-05-08',
-		category: 'Setup',
-		status: 'DONE',
-	},
-	{
-		id: 3,
-		title: 'Draft the task creation flow',
-		description: 'Design a minimal modal or panel for adding new tasks quickly.',
-		priority: 'LOW',
-		deadline: '2026-05-14',
-		category: 'UX',
-		status: 'IN_PROGRESS',
-	},
-	{
-		id: 4,
-		title: 'Review state management approach',
-		description: 'Compare local state, context, or a lightweight store for the next step.',
-		priority: 'MEDIUM',
-		deadline: '2026-05-18',
-		category: 'Architecture',
-		status: 'TODO',
-	},
-]
-
 export default function Tasks() {
-	const [tasks, setTasks] = useState(initialTasks)
+	const [tasks, setTasks] = useState<Task[]>([])
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
 	const [query, setQuery] = useState('')
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState('')
+
+	useEffect(() => {
+		let isMounted = true
+
+		const loadTasks = async () => {
+			try {
+				setIsLoading(true)
+				setError('')
+				const data = await listTasks()
+
+				if (isMounted) {
+					setTasks(data)
+				}
+			} catch (loadError) {
+				if (isMounted) {
+					setError(loadError instanceof Error ? loadError.message : 'Failed to load tasks')
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false)
+				}
+			}
+		}
+
+		void loadTasks()
+
+		return () => {
+			isMounted = false
+		}
+	}, [])
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -96,22 +94,37 @@ export default function Tasks() {
 	}
 
 	const handleSaveTask = (taskData: Omit<Task, 'id'>) => {
-		if (editingTask) {
-			setTasks((prev) =>
-				prev.map((t) => (t.id === editingTask.id ? { ...t, ...taskData } : t))
-			)
-		} else {
-			const newTask: Task = {
-				...taskData,
-				id: Math.max(...tasks.map((t) => t.id), 0) + 1,
+		const saveTask = async () => {
+			try {
+				setError('')
+				if (editingTask) {
+					const updatedTask = await updateTaskRequest(editingTask.id, taskData)
+					setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
+				} else {
+					const createdTask = await createTask(taskData)
+					setTasks((prev) => [createdTask, ...prev])
+				}
+				handleCloseModal()
+			} catch (saveError) {
+				setError(saveError instanceof Error ? saveError.message : 'Failed to save task')
 			}
-			setTasks((prev) => [newTask, ...prev])
 		}
-		handleCloseModal()
+
+		void saveTask()
 	}
 
 	const handleDeleteTask = (id: number) => {
-		setTasks((prev) => prev.filter((t) => t.id !== id))
+		const removeTask = async () => {
+			try {
+				setError('')
+				await deleteTask(id)
+				setTasks((prev) => prev.filter((task) => task.id !== id))
+			} catch (deleteError) {
+				setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete task')
+			}
+		}
+
+		void removeTask()
 	}
 
 	const handleDragEnd = (event: DragEndEvent) => {
@@ -123,11 +136,23 @@ export default function Tasks() {
 		const [overStatus] = over.id.toString().split('-')
 
 		if (activeStatus !== overStatus) {
+			const taskId = Number(activeId)
+			const currentTask = tasks.find((task) => task.id === taskId)
+
+			if (!currentTask) return
+
+			const previousTasks = tasks
+			const nextStatus = overStatus as Task['status']
+
 			setTasks((prev) =>
-				prev.map((t) =>
-					t.id === parseInt(activeId) ? { ...t, status: overStatus as Task['status'] } : t
-				)
+				prev.map((task) => (task.id === taskId ? { ...task, status: nextStatus } : task))
 			)
+
+			void updateTaskRequest(taskId, { ...currentTask, status: nextStatus })
+				.catch((dragError) => {
+					setTasks(previousTasks)
+					setError(dragError instanceof Error ? dragError.message : 'Failed to update task')
+				})
 		}
 	}
 
@@ -152,7 +177,22 @@ export default function Tasks() {
 						</button>
 					</div>
 
-					<div className={styles.stats}>
+					{error && (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>{error}</p>
+							<button className={styles.emptyButton} onClick={() => window.location.reload()} type="button">
+								Retry
+							</button>
+						</div>
+					)}
+
+					{isLoading ? (
+						<div className={styles.emptyState}>
+							<p className={styles.emptyText}>Loading tasks from the backend...</p>
+						</div>
+					) : (
+						<>
+							<div className={styles.stats}>
 						<div className={styles.statCard}>
 							<span className={styles.statLabel}>Total</span>
 							<strong className={styles.statValue}>{tasks.length}</strong>
@@ -169,33 +209,41 @@ export default function Tasks() {
 							<span className={styles.statLabel}>Done</span>
 							<strong className={styles.statValue}>{doneTasks.length}</strong>
 						</div>
-					</div>
+							</div>
 
-					<DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-						<div className={styles.kanbanBoard}>
-							<KanbanColumn
-								status="TODO"
-								title="Todo"
-								tasks={todoTasks}
-								onEditTask={handleEditTask}
-								onDeleteTask={handleDeleteTask}
-							/>
-							<KanbanColumn
-								status="IN_PROGRESS"
-								title="In Progress"
-								tasks={inProgressTasks}
-								onEditTask={handleEditTask}
-								onDeleteTask={handleDeleteTask}
-							/>
-							<KanbanColumn
-								status="DONE"
-								title="Done"
-								tasks={doneTasks}
-								onEditTask={handleEditTask}
-								onDeleteTask={handleDeleteTask}
-							/>
-						</div>
-					</DndContext>
+							<DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+								{filteredTasks.length > 0 ? (
+									<div className={styles.kanbanBoard}>
+										<KanbanColumn
+											status="TODO"
+											title="Todo"
+											tasks={todoTasks}
+											onEditTask={handleEditTask}
+											onDeleteTask={handleDeleteTask}
+										/>
+										<KanbanColumn
+											status="IN_PROGRESS"
+											title="In Progress"
+											tasks={inProgressTasks}
+											onEditTask={handleEditTask}
+											onDeleteTask={handleDeleteTask}
+										/>
+										<KanbanColumn
+											status="DONE"
+											title="Done"
+											tasks={doneTasks}
+											onEditTask={handleEditTask}
+											onDeleteTask={handleDeleteTask}
+										/>
+									</div>
+								) : (
+									<div className={styles.emptyState}>
+										<p className={styles.emptyText}>No tasks match your search.</p>
+									</div>
+								)}
+							</DndContext>
+						</>
+					)}
 				</div>
 			</main>
 

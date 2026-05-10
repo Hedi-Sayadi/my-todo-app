@@ -31,6 +31,24 @@
 	gap: 8px;
 }
 
+.titleSection {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+.categoryBadge {
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	background: #f3f4f6;
+	color: #4b5563;
+	letter-spacing: 0.02em;
+	width: fit-content;
+}
+
 .title {
 	margin: 0;
 	font-size: 14px;
@@ -80,6 +98,14 @@
 	color: #6b7280;
 	font-size: 12px;
 	line-height: 1.4;
+}
+
+.metadata {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	padding-top: 6px;
+	border-top: 1px solid #f3f4f6;
 }
 
 .metadata {
