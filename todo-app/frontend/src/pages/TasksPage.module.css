@@ -198,6 +198,31 @@
   }
 }
 
+.kanbanBoard {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 2px;
+  scroll-behavior: smooth;
+}
+
+.kanbanBoard::-webkit-scrollbar {
+  height: 8px;
+}
+
+.kanbanBoard::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kanbanBoard::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.kanbanBoard::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 @media (prefers-color-scheme: dark) {
   .statCard {
     background: rgba(31, 32, 40, 0.6);
@@ -207,5 +232,13 @@
   .emptyState {
     background: rgba(31, 32, 40, 0.3);
     border-color: rgba(46, 48, 58, 0.5);
+  }
+
+  .kanbanBoard::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+
+  .kanbanBoard::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
   }
 }

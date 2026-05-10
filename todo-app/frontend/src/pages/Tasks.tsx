@@ -1,9 +1,19 @@
 import { useState } from 'react'
+import {
+	DndContext,
+	closestCorners,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+} from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import type { Task } from '../types/task'
-import TaskCard from '../components/TaskCard'
 import TaskModal from '../components/TaskModal'
 import Sidebar from '../components/Sidebar'
 import Header from '../components/Header'
+import KanbanColumn from '../components/KanbanColumn'
 import styles from './TasksPage.module.css'
 
 const initialTasks: Task[] = [
@@ -52,12 +62,23 @@ export default function Tasks() {
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
 	const [query, setQuery] = useState('')
 
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	)
+
 	const filteredTasks = tasks.filter((task) => {
 		const searchableText = [task.title, task.description, task.category, task.priority]
 			.join(' ')
 			.toLowerCase()
 		return searchableText.includes(query.toLowerCase())
 	})
+
+	const todoTasks = filteredTasks.filter((t) => t.status === 'TODO')
+	const inProgressTasks = filteredTasks.filter((t) => t.status === 'IN_PROGRESS')
+	const doneTasks = filteredTasks.filter((t) => t.status === 'DONE')
 
 	const handleOpenModal = () => {
 		setEditingTask(null)
@@ -93,6 +114,23 @@ export default function Tasks() {
 		setTasks((prev) => prev.filter((t) => t.id !== id))
 	}
 
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event
+
+		if (!over) return
+
+		const [activeStatus, activeId] = active.id.toString().split('-')
+		const [overStatus] = over.id.toString().split('-')
+
+		if (activeStatus !== overStatus) {
+			setTasks((prev) =>
+				prev.map((t) =>
+					t.id === parseInt(activeId) ? { ...t, status: overStatus as Task['status'] } : t
+				)
+			)
+		}
+	}
+
 	return (
 		<div className={styles.shell}>
 			<Sidebar onItemSelect={() => {}} />
@@ -103,7 +141,7 @@ export default function Tasks() {
 					<div className={styles.topBar}>
 						<div>
 							<p className={styles.eyebrow}>Task Management</p>
-							<h2 className={styles.title}>All Tasks</h2>
+							<h2 className={styles.title}>Kanban Board</h2>
 						</div>
 						<button className={styles.createButton} onClick={handleOpenModal} type="button">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -121,43 +159,43 @@ export default function Tasks() {
 						</div>
 						<div className={styles.statCard}>
 							<span className={styles.statLabel}>Todo</span>
-							<strong className={styles.statValue}>
-								{tasks.filter((t) => t.status === 'TODO').length}
-							</strong>
+							<strong className={styles.statValue}>{todoTasks.length}</strong>
 						</div>
 						<div className={styles.statCard}>
 							<span className={styles.statLabel}>In progress</span>
-							<strong className={styles.statValue}>
-								{tasks.filter((t) => t.status === 'IN_PROGRESS').length}
-							</strong>
+							<strong className={styles.statValue}>{inProgressTasks.length}</strong>
 						</div>
 						<div className={styles.statCard}>
 							<span className={styles.statLabel}>Done</span>
-							<strong className={styles.statValue}>
-								{tasks.filter((t) => t.status === 'DONE').length}
-							</strong>
+							<strong className={styles.statValue}>{doneTasks.length}</strong>
 						</div>
 					</div>
 
-					{filteredTasks.length > 0 ? (
-						<div className={styles.taskGrid}>
-							{filteredTasks.map((task) => (
-								<TaskCard
-									key={task.id}
-									task={task}
-									onEdit={() => handleEditTask(task)}
-									onDelete={() => handleDeleteTask(task.id)}
-								/>
-							))}
+					<DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+						<div className={styles.kanbanBoard}>
+							<KanbanColumn
+								status="TODO"
+								title="Todo"
+								tasks={todoTasks}
+								onEditTask={handleEditTask}
+								onDeleteTask={handleDeleteTask}
+							/>
+							<KanbanColumn
+								status="IN_PROGRESS"
+								title="In Progress"
+								tasks={inProgressTasks}
+								onEditTask={handleEditTask}
+								onDeleteTask={handleDeleteTask}
+							/>
+							<KanbanColumn
+								status="DONE"
+								title="Done"
+								tasks={doneTasks}
+								onEditTask={handleEditTask}
+								onDeleteTask={handleDeleteTask}
+							/>
 						</div>
-					) : (
-						<div className={styles.emptyState}>
-							<p className={styles.emptyText}>No tasks match your search.</p>
-							<button className={styles.emptyButton} onClick={handleOpenModal} type="button">
-								Create your first task
-							</button>
-						</div>
-					)}
+					</DndContext>
 				</div>
 			</main>
 
