@@ -1,0 +1,151 @@
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 14px;
+	border-radius: 12px;
+	background: #ffffff;
+	border: 1px solid #dbe2ea;
+	cursor: grab;
+	transition:
+		transform 160ms ease,
+		box-shadow 160ms ease,
+		border-color 160ms ease;
+	box-shadow: none;
+}
+
+.card:hover {
+	transform: translateY(-2px);
+	border-color: #cfd8e3;
+	box-shadow: none;
+}
+
+.card:active {
+	cursor: grabbing;
+}
+
+.cardHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.title {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: #111827;
+	line-height: 1.4;
+	flex: 1;
+}
+
+.actions {
+	display: flex;
+	gap: 6px;
+	opacity: 0;
+	transition: opacity 160ms ease;
+}
+
+.card:hover .actions {
+	opacity: 1;
+}
+
+.iconButton {
+	appearance: none;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	padding: 4px 6px;
+	background: transparent;
+	color: #6b7280;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 160ms ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+}
+
+.iconButton:hover {
+	background: #f3f4f6;
+	color: #111827;
+	border-color: #e5e7eb;
+}
+
+.description {
+	margin: 0;
+	color: #6b7280;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.metadata {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	padding-top: 6px;
+	border-top: 1px solid #f3f4f6;
+}
+
+.statusBadge,
+.priorityBadge {
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.deadline {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	color: #9ca3af;
+	padding-top: 2px;
+}
+
+.deadlineLabel {
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	font-weight: 600;
+	color: #6b7280;
+}
+
+.deadlineValue {
+	color: #374151;
+	font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+	.card {
+		background: rgba(31, 32, 40, 0.8);
+		border-color: rgba(46, 48, 58, 0.8);
+	}
+
+	.card:hover {
+		border-color: rgba(46, 48, 58, 0.9);
+	}
+
+	.title {
+		color: #f3f4f6;
+	}
+
+	.description {
+		color: #d1d5db;
+	}
+
+	.metadata {
+		border-top-color: rgba(46, 48, 58, 0.5);
+	}
+
+	.iconButton:hover {
+		background: rgba(46, 48, 58, 0.6);
+		color: #f3f4f6;
+		border-color: rgba(46, 48, 58, 0.8);
+	}
+}
