@@ -17,7 +17,7 @@
   max-height: 90vh;
   background: white;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   overflow-y: auto;
   animation: slideIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -125,8 +125,8 @@
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: rgba(170, 59, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(170, 59, 255, 0.08);
+  border-color: var(--accent-border);
+  box-shadow: none;
 }
 
 .textarea {
@@ -163,14 +163,14 @@
 }
 
 .buttonPrimary {
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  background: var(--accent);
   color: white;
-  box-shadow: 0 12px 24px rgba(170, 59, 255, 0.28);
+  box-shadow: none;
 }
 
 .buttonPrimary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(170, 59, 255, 0.36);
+  box-shadow: none;
 }
 
 .buttonSecondary {

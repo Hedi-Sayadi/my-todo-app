@@ -16,7 +16,7 @@ const tasks: Task[] = [
 		priority: 'HIGH',
 		deadline: '2026-05-21',
 		category: 'Planning',
-		completed: false,
+		status: 'TODO',
 	},
 	{
 		id: 2,
@@ -25,7 +25,7 @@ const tasks: Task[] = [
 		priority: 'MEDIUM',
 		deadline: '2026-05-08',
 		category: 'Setup',
-		completed: true,
+		status: 'DONE',
 	},
 	{
 		id: 3,
@@ -34,7 +34,7 @@ const tasks: Task[] = [
 		priority: 'LOW',
 		deadline: '2026-05-14',
 		category: 'UX',
-		completed: false,
+		status: 'IN_PROGRESS',
 	},
 	{
 		id: 4,
@@ -43,7 +43,7 @@ const tasks: Task[] = [
 		priority: 'MEDIUM',
 		deadline: '2026-05-18',
 		category: 'Architecture',
-		completed: false,
+		status: 'TODO',
 	},
 ]
 
@@ -65,9 +65,9 @@ function Dashboard() {
 		setActiveItem(mapPathToItem(location.pathname))
 	}, [location.pathname])
 
-	const completedCount = tasks.filter((task) => task.completed).length
-	const remainingCount = tasks.length - completedCount
-	const dueSoonCount = tasks.filter((task) => !task.completed).length
+	const todoCount = tasks.filter((task) => task.status === 'TODO').length
+	const inProgressCount = tasks.filter((task) => task.status === 'IN_PROGRESS').length
+	const doneCount = tasks.filter((task) => task.status === 'DONE').length
 
 	const filteredTasks = tasks.filter((task) => {
 		const searchableText = [task.title, task.description, task.category, task.priority]
@@ -78,22 +78,6 @@ function Dashboard() {
 	})
 
 	const recommendedTask = filteredTasks[0] ?? tasks[0]
-
-	const handleToggleComplete = (id: number) => {
-		console.log('toggle complete', id)
-	}
-
-	const handleEdit = (task: Task) => {
-		console.log('edit task', task)
-	}
-
-	const handleDelete = (id: number) => {
-		console.log('delete task', id)
-	}
-
-	const handleStartTask = (task: Task) => {
-		console.log('start task', task)
-	}
 
 	return (
 		<div className={styles.shell}>
@@ -108,16 +92,16 @@ function Dashboard() {
 						<strong className={styles.summaryValue}>{tasks.length}</strong>
 					</div>
 					<div className={styles.summaryCard}>
-						<span className={styles.summaryLabel}>Completed</span>
-						<strong className={styles.summaryValue}>{completedCount}</strong>
+						<span className={styles.summaryLabel}>Todo</span>
+						<strong className={styles.summaryValue}>{todoCount}</strong>
 					</div>
 					<div className={styles.summaryCard}>
-						<span className={styles.summaryLabel}>Remaining</span>
-						<strong className={styles.summaryValue}>{remainingCount}</strong>
+						<span className={styles.summaryLabel}>In progress</span>
+						<strong className={styles.summaryValue}>{inProgressCount}</strong>
 					</div>
 					<div className={styles.summaryCard}>
-						<span className={styles.summaryLabel}>Due soon</span>
-						<strong className={styles.summaryValue}>{dueSoonCount}</strong>
+						<span className={styles.summaryLabel}>Done</span>
+						<strong className={styles.summaryValue}>{doneCount}</strong>
 					</div>
 				</section>
 
@@ -125,7 +109,6 @@ function Dashboard() {
 					<RecommendedTask
 						task={recommendedTask}
 						reason="Based on priority and deadline, this task needs your focus first."
-						onStart={handleStartTask}
 					/>
 				</section>
 
@@ -143,18 +126,12 @@ function Dashboard() {
 							<TaskCard
 								key={task.id}
 								task={task}
-								onToggleComplete={handleToggleComplete}
-								onEdit={handleEdit}
-								onDelete={handleDelete}
 							/>
 						))}
 					</div>
 				</section>
 			</main>
 
-			<button type="button" className={styles.floatingAction}>
-				Add Task
-			</button>
 		</div>
 	)
 }

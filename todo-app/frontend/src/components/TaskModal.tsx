@@ -10,6 +10,12 @@ interface TaskModalProps {
 }
 
 const priorities = ['LOW', 'MEDIUM', 'HIGH']
+const statuses = ['TODO', 'IN_PROGRESS', 'DONE']
+const statusLabels: Record<'TODO' | 'IN_PROGRESS' | 'DONE', string> = {
+  TODO: 'Todo',
+  IN_PROGRESS: 'In progress',
+  DONE: 'Done',
+}
 
 export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalProps) {
   const [title, setTitle] = useState('')
@@ -17,6 +23,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
   const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM')
   const [deadline, setDeadline] = useState('')
   const [category, setCategory] = useState('')
+  const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO')
 
   useEffect(() => {
     if (task) {
@@ -25,12 +32,14 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
       setPriority(task.priority)
       setDeadline(task.deadline)
       setCategory(task.category)
+      setStatus(task.status)
     } else {
       setTitle('')
       setDescription('')
       setPriority('MEDIUM')
       setDeadline('')
       setCategory('')
+      setStatus('TODO')
     }
   }, [task, isOpen])
 
@@ -44,7 +53,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
       priority,
       deadline,
       category,
-      completed: task?.completed ?? false,
+      status,
     })
 
     setTitle('')
@@ -52,6 +61,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
     setPriority('MEDIUM')
     setDeadline('')
     setCategory('')
+    setStatus('TODO')
   }
 
   if (!isOpen) return null
@@ -122,18 +132,36 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="category" className={styles.label}>
-                Category
+              <label htmlFor="status" className={styles.label}>
+                Status
               </label>
-              <input
-                id="category"
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g. Planning"
-                className={styles.input}
-              />
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as 'TODO' | 'IN_PROGRESS' | 'DONE')}
+                className={styles.select}
+              >
+                {statuses.map((item) => (
+                  <option key={item} value={item}>
+                    {statusLabels[item as 'TODO' | 'IN_PROGRESS' | 'DONE']}
+                  </option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="category" className={styles.label}>
+              Category
+            </label>
+            <input
+              id="category"
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. Planning"
+              className={styles.input}
+            />
           </div>
 
           <div className={styles.formGroup}>
