@@ -48,7 +48,10 @@ export default function KanbanTaskCard({ task, status, onEdit, onDelete }: Kanba
 	return (
 		<div ref={setNodeRef} style={style} className={styles.card} {...attributes} {...listeners}>
 			<div className={styles.cardHeader}>
-				<h4 className={styles.title}>{task.title}</h4>
+				<div className={styles.titleSection}>
+					<h4 className={styles.title}>{task.title}</h4>
+					<span className={styles.categoryBadge}>{task.category}</span>
+				</div>
 				<div className={styles.actions}>
 					<button
 						className={styles.iconButton}
@@ -76,30 +79,28 @@ export default function KanbanTaskCard({ task, status, onEdit, onDelete }: Kanba
 			{task.description && <p className={styles.description}>{task.description}</p>}
 
 			<div className={styles.metadata}>
-				<span
-					className={styles.statusBadge}
-					style={{
-						background: statusColors[status],
-						color: statusTextColors[status],
-					}}
-				>
-					{statusLabels[status]}
-				</span>
-				<span
-					className={styles.priorityBadge}
-					style={{
-						background: priorityColors[task.priority].bg,
-						color: priorityColors[task.priority].text,
-					}}
-				>
-					{task.priority}
-				</span>
-			</div>
+			<span
+				className={styles.statusBadge}
+				style={{
+					background: statusColors[status],
+					color: statusTextColors[status],
+				}}
+			>
+				{statusLabels[status]}
+			</span>
+			<span
+				className={styles.priorityBadge}
+				style={{
+					background: priorityColors[task.priority].bg,
+					color: priorityColors[task.priority].text,
+				}}
+			>
+				{task.priority}
+			</span>
+		</div>
 
-			{task.deadline && (
-				<div className={styles.deadline}>
-					<span className={styles.deadlineLabel}>Due:</span>
-					<span className={styles.deadlineValue}>{task.deadline}</span>
+		{task.deadline && (
+			<div className={styles.deadline}>
 				</div>
 			)}
 		</div>

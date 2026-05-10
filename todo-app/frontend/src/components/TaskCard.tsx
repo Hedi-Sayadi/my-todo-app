@@ -19,7 +19,11 @@ const statusLabels: Record<Task['status'], string> = {
 	DONE: 'Done',
 }
 
-function formatDeadline(deadline: string) {
+function formatDeadline(deadline: string | null) {
+	if (!deadline) {
+		return 'No deadline'
+	}
+
 	const parsedDate = new Date(deadline)
 
 	if (Number.isNaN(parsedDate.getTime())) {

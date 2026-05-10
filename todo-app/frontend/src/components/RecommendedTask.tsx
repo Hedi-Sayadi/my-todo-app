@@ -46,7 +46,7 @@ export default function RecommendedTask({ task, reason, onStart }: RecommendedTa
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Due</span>
-            <span className={styles.metaValue}>{formatDate(task.deadline)}</span>
+            <span className={styles.metaValue}>{task.deadline ? formatDate(task.deadline) : 'No deadline'}</span>
           </div>
         </div>
 

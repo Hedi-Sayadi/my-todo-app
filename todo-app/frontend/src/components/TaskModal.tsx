@@ -30,7 +30,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
       setTitle(task.title)
       setDescription(task.description)
       setPriority(task.priority)
-      setDeadline(task.deadline)
+      setDeadline(task.deadline ?? '')
       setCategory(task.category)
       setStatus(task.status)
     } else {
@@ -152,7 +152,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
 
           <div className={styles.formGroup}>
             <label htmlFor="category" className={styles.label}>
-              Category
+              Category *
             </label>
             <input
               id="category"
@@ -161,6 +161,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
               onChange={(e) => setCategory(e.target.value)}
               placeholder="e.g. Planning"
               className={styles.input}
+              required
             />
           </div>
 
