@@ -1,4 +1,44 @@
 package com.hedi.todo.backend.dto;
 
+import java.time.LocalDate;
+
+import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskStatus;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * DTO for creating or updating a Task.
+ * 
+ * This DTO is used for incoming requests from the client.
+ * It includes validation constraints to ensure data integrity.
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class TaskRequestDTO {
+
+	@NotBlank(message = "Task title cannot be blank")
+	private String title;
+
+	private String description;
+
+	@NotNull(message = "Task priority is required")
+	private TaskPriority priority;
+
+	private LocalDate deadline;
+
+	@NotBlank(message = "Task category cannot be blank")
+	private String category;
+
+	@NotNull(message = "Task status is required")
+	private TaskStatus status;
+
 }
+
