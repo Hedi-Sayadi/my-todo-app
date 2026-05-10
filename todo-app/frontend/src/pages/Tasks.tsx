@@ -15,7 +15,7 @@ const initialTasks: Task[] = [
 		priority: 'HIGH',
 		deadline: '2026-05-21',
 		category: 'Planning',
-		completed: false,
+		status: 'TODO',
 	},
 	{
 		id: 2,
@@ -24,7 +24,7 @@ const initialTasks: Task[] = [
 		priority: 'MEDIUM',
 		deadline: '2026-05-08',
 		category: 'Setup',
-		completed: true,
+		status: 'DONE',
 	},
 	{
 		id: 3,
@@ -33,7 +33,7 @@ const initialTasks: Task[] = [
 		priority: 'LOW',
 		deadline: '2026-05-14',
 		category: 'UX',
-		completed: false,
+		status: 'IN_PROGRESS',
 	},
 	{
 		id: 4,
@@ -42,7 +42,7 @@ const initialTasks: Task[] = [
 		priority: 'MEDIUM',
 		deadline: '2026-05-18',
 		category: 'Architecture',
-		completed: false,
+		status: 'TODO',
 	},
 ]
 
@@ -89,12 +89,6 @@ export default function Tasks() {
 		handleCloseModal()
 	}
 
-	const handleToggleComplete = (id: number) => {
-		setTasks((prev) =>
-			prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-		)
-	}
-
 	const handleDeleteTask = (id: number) => {
 		setTasks((prev) => prev.filter((t) => t.id !== id))
 	}
@@ -116,7 +110,7 @@ export default function Tasks() {
 								<line x1="12" y1="5" x2="12" y2="19" />
 								<line x1="5" y1="12" x2="19" y2="12" />
 							</svg>
-							New Task
+							Add Task
 						</button>
 					</div>
 
@@ -126,15 +120,21 @@ export default function Tasks() {
 							<strong className={styles.statValue}>{tasks.length}</strong>
 						</div>
 						<div className={styles.statCard}>
-							<span className={styles.statLabel}>Completed</span>
+							<span className={styles.statLabel}>Todo</span>
 							<strong className={styles.statValue}>
-								{tasks.filter((t) => t.completed).length}
+								{tasks.filter((t) => t.status === 'TODO').length}
 							</strong>
 						</div>
 						<div className={styles.statCard}>
-							<span className={styles.statLabel}>Active</span>
+							<span className={styles.statLabel}>In progress</span>
 							<strong className={styles.statValue}>
-								{tasks.filter((t) => !t.completed).length}
+								{tasks.filter((t) => t.status === 'IN_PROGRESS').length}
+							</strong>
+						</div>
+						<div className={styles.statCard}>
+							<span className={styles.statLabel}>Done</span>
+							<strong className={styles.statValue}>
+								{tasks.filter((t) => t.status === 'DONE').length}
 							</strong>
 						</div>
 					</div>
@@ -145,7 +145,6 @@ export default function Tasks() {
 								<TaskCard
 									key={task.id}
 									task={task}
-									onToggleComplete={() => handleToggleComplete(task.id)}
 									onEdit={() => handleEditTask(task)}
 									onDelete={() => handleDeleteTask(task.id)}
 								/>
@@ -169,9 +168,6 @@ export default function Tasks() {
 				onSave={handleSaveTask}
 			/>
 
-			<button type="button" className={styles.floatingAction} onClick={handleOpenModal}>
-				+
-			</button>
 		</div>
 	)
 }

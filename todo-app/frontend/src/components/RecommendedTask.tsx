@@ -9,8 +9,8 @@ interface RecommendedTaskProps {
 
 const priorityColors: Record<'LOW' | 'MEDIUM' | 'HIGH', string> = {
   LOW: '#10b981',
-  MEDIUM: '#f59e0b',
-  HIGH: '#ef4444',
+  MEDIUM: '#b45309',
+  HIGH: '#991b1b',
 }
 
 export default function RecommendedTask({ task, reason, onStart }: RecommendedTaskProps) {
@@ -50,13 +50,15 @@ export default function RecommendedTask({ task, reason, onStart }: RecommendedTa
           </div>
         </div>
 
-        <button className={styles.startButton} onClick={() => onStart?.(task)} type="button">
-          Start Task
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
+        {onStart ? (
+          <button className={styles.startButton} onClick={() => onStart(task)} type="button">
+            Start Task
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        ) : null}
       </div>
 
       <div className={styles.glow} />

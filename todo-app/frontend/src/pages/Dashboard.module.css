@@ -2,10 +2,7 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  background:
-    radial-gradient(circle at top left, rgba(170, 59, 255, 0.14), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(170, 59, 255, 0.08), transparent 30%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .sectionEyebrow {
@@ -40,7 +37,7 @@
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(229, 228, 231, 0.9);
-  box-shadow: 0 10px 24px rgba(8, 6, 13, 0.06);
+  box-shadow: none;
 }
 
 .summaryLabel {
@@ -88,7 +85,7 @@
   justify-content: center;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba(170, 59, 255, 0.12);
+  background: var(--accent-bg);
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
@@ -98,23 +95,8 @@
 
 .taskGrid {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-
-.floatingAction {
-  position: fixed;
-  right: 32px;
-  bottom: 32px;
-  padding: 16px 20px;
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  box-shadow: 0 16px 30px rgba(170, 59, 255, 0.28);
-  cursor: pointer;
 }
 
 @media (max-width: 1024px) {
@@ -141,8 +123,7 @@
     padding: 0 18px 18px 18px;
   }
 
-  .floatingAction {
-    right: 18px;
-    bottom: 18px;
+  .taskGrid {
+    gap: 18px;
   }
 }

@@ -5,5 +5,5 @@ export interface Task {
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   deadline: string;
   category: string;
-  completed: boolean;
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
 }

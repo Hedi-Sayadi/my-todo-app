@@ -2,10 +2,7 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  background:
-    radial-gradient(circle at top left, rgba(170, 59, 255, 0.14), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(170, 59, 255, 0.08), transparent 30%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .main {
@@ -49,9 +46,9 @@
 .createButton {
   appearance: none;
   border: 0;
-  padding: 12px 20px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: var(--accent);
   color: white;
   font: inherit;
   font-size: 14px;
@@ -60,25 +57,28 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
-  box-shadow: 0 12px 24px rgba(170, 59, 255, 0.28);
+  box-shadow: none;
 }
 
 .createButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(170, 59, 255, 0.36);
+  box-shadow: none;
 }
 
 .createButton svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
 }
 
@@ -87,7 +87,7 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(229, 228, 231, 0.9);
-  box-shadow: 0 10px 24px rgba(8, 6, 13, 0.06);
+  box-shadow: none;
 }
 
 .statLabel {
@@ -108,7 +108,7 @@
 
 .taskGrid {
   display: grid;
-  gap: 16px;
+  gap: 20px;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
@@ -132,7 +132,7 @@
   border: 0;
   padding: 12px 24px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  background: var(--accent);
   color: white;
   font: inherit;
   font-size: 14px;
@@ -141,39 +141,12 @@
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
-  box-shadow: 0 12px 24px rgba(170, 59, 255, 0.28);
+  box-shadow: none;
 }
 
 .emptyButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px rgba(170, 59, 255, 0.36);
-}
-
-.floatingAction {
-  position: fixed;
-  right: 32px;
-  bottom: 32px;
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-  border: 0;
-  background: linear-gradient(135deg, var(--accent), #6d28d9);
-  color: white;
-  font-size: 28px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 16px 30px rgba(170, 59, 255, 0.28);
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.floatingAction:hover {
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 20px 40px rgba(170, 59, 255, 0.36);
+  box-shadow: none;
 }
 
 @media (max-width: 1024px) {
@@ -182,7 +155,7 @@
   }
 
   .stats {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .taskGrid {
@@ -217,15 +190,11 @@
 
   .taskGrid {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
   .emptyState {
     padding: 40px 20px;
-  }
-
-  .floatingAction {
-    right: 16px;
-    bottom: 16px;
   }
 }
 
