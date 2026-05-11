@@ -2,66 +2,123 @@ import { useEffect, useMemo, useState } from 'react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import { listTasks } from '../services/taskService'
+import {
+  createReminder,
+  deleteReminder,
+  listReminders,
+  markReminderDone,
+  snoozeReminder,
+  updateReminder,
+  type ReminderPayload,
+  } from '../services/reminderService'
+import type { Reminder, ReminderStatus } from '../types/reminder'
 import type { Task } from '../types/task'
 import styles from './PagePlaceholder.module.css'
 
-type ReminderState = 'Overdue' | 'Due today' | 'Due soon'
+type ReminderViewState = 'Overdue' | 'Due today' | 'Due soon'
 
-type ReminderItem = {
-  title: string
-  dueLabel: string
-  priority: Task['priority']
-  state: ReminderState
-  task: Task
+const reminderStatusLabels: Record<ReminderStatus, string> = {
+  PENDING: 'Pending',
+  SNOOZED: 'Snoozed',
+  DONE: 'Done',
 }
 
+const reminderStatusClasses: Record<ReminderStatus, string> = {
+  PENDING: styles.priorityLow,
+  SNOOZED: styles.priorityMedium,
+  DONE: styles.activeBadge,
+}
+
+const reminderStateOrder: Record<ReminderViewState, number> = {
+  Overdue: 0,
+  'Due today': 1,
+  'Due soon': 2,
+}
+
+const reminderSnoozeMinutes = 60
 const dayMs = 24 * 60 * 60 * 1000
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-function formatDueLabel(deadline: string) {
-  const dueDate = new Date(deadline)
-
+function formatReminderDateTime(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  }).format(dueDate)
+  }).format(new Date(value))
 }
 
-function getReminderState(deadline: string, now: Date): ReminderState {
-  const dueDate = startOfDay(new Date(deadline))
+function formatDateTimeLocal(value: string) {
+  return value.slice(0, 16)
+}
+
+function formatNewReminderDateTime() {
+  const value = new Date(Date.now() + 60 * 60 * 1000)
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(2, '0')
+  const day = String(value.getDate()).padStart(2, '0')
+  const hours = String(value.getHours()).padStart(2, '0')
+  const minutes = String(value.getMinutes()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function getEffectiveReminderTime(reminder: Reminder) {
+  return reminder.snoozeUntil ?? reminder.reminderAt
+}
+
+function getReminderState(reminder: Reminder, now: Date): ReminderViewState {
+  const effectiveTime = startOfDay(new Date(getEffectiveReminderTime(reminder)))
   const today = startOfDay(now)
-  const diffDays = Math.floor((dueDate.getTime() - today.getTime()) / dayMs)
+  const diffDays = Math.floor((effectiveTime.getTime() - today.getTime()) / dayMs)
 
   if (diffDays < 0) return 'Overdue'
   if (diffDays === 0) return 'Due today'
   return 'Due soon'
 }
 
-function getReminderCountLabel(count: number) {
+function getCountLabel(count: number) {
   return count.toString().padStart(2, '0')
+}
+
+type ReminderFormState = {
+  taskId: string
+  reminderAt: string
+  note: string
+  status: ReminderStatus
+}
+
+const defaultFormState: ReminderFormState = {
+  taskId: '',
+  reminderAt: formatNewReminderDateTime(),
+  note: '',
+  status: 'PENDING',
 }
 
 export default function Reminders() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [reminders, setReminders] = useState<Reminder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)
+  const [formState, setFormState] = useState<ReminderFormState>(defaultFormState)
 
   useEffect(() => {
     let isMounted = true
 
-    const loadTasks = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true)
         setError('')
-        const taskData = await listTasks()
+        const [taskData, reminderData] = await Promise.all([listTasks(), listReminders()])
 
         if (isMounted) {
           setTasks(taskData)
+          setReminders(reminderData)
         }
       } catch (loadError) {
         if (isMounted) {
@@ -74,49 +131,142 @@ export default function Reminders() {
       }
     }
 
-    void loadTasks()
+    void loadData()
 
     return () => {
       isMounted = false
     }
   }, [])
 
-  const reminders = useMemo<ReminderItem[]>(() => {
-    const now = new Date()
+  const activeReminders = useMemo(() => reminders.filter((reminder) => reminder.status !== 'DONE'), [reminders])
+  const completedCount = reminders.length - activeReminders.length
 
-    return tasks
-      .filter((task) => task.deadline && task.status !== 'DONE')
-      .map((task) => {
-        const deadline = task.deadline as string
+  const reminderCards = useMemo(
+    () =>
+      activeReminders
+        .map((reminder) => ({
+          reminder,
+          state: getReminderState(reminder, new Date()),
+        }))
+        .sort((left, right) => {
+          const leftState = reminderStateOrder[left.state]
+          const rightState = reminderStateOrder[right.state]
 
-        return {
-          title: task.title,
-          dueLabel: formatDueLabel(deadline),
-          priority: task.priority,
-          state: getReminderState(deadline, now),
-          task,
+          if (leftState !== rightState) return leftState - rightState
+
+          return new Date(getEffectiveReminderTime(left.reminder)).getTime() - new Date(getEffectiveReminderTime(right.reminder)).getTime()
+        }),
+    [activeReminders]
+  )
+
+  const dueTodayCount = reminderCards.filter((item) => item.state === 'Due today').length
+  const overdueCount = reminderCards.filter((item) => item.state === 'Overdue').length
+  const upcomingCount = reminderCards.filter((item) => item.state === 'Due soon').length
+
+  const resetForm = () => {
+    setFormState(defaultFormState)
+    setEditingReminder(null)
+    setIsFormOpen(false)
+  }
+
+  const startCreate = () => {
+    setEditingReminder(null)
+    setFormState({
+      taskId: tasks[0] ? String(tasks[0].id) : '',
+      reminderAt: formatNewReminderDateTime(),
+      note: '',
+      status: 'PENDING',
+    })
+    setIsFormOpen(true)
+  }
+
+  const startEdit = (reminder: Reminder) => {
+    setEditingReminder(reminder)
+    setFormState({
+      taskId: String(reminder.task.id),
+      reminderAt: formatDateTimeLocal(reminder.reminderAt),
+      note: reminder.note ?? '',
+      status: reminder.status,
+    })
+    setIsFormOpen(true)
+  }
+
+  const handleSave = () => {
+    const saveReminder = async () => {
+      try {
+        setError('')
+
+        const payload: ReminderPayload = {
+          taskId: Number(formState.taskId),
+          reminderAt: formState.reminderAt,
+          note: formState.note,
+          status: formState.status,
         }
-      })
-      .sort((left, right) => {
-        const priorityOrder: Record<ReminderState, number> = {
-          Overdue: 0,
-          'Due today': 1,
-          'Due soon': 2,
+
+        if (editingReminder) {
+          const updated = await updateReminder(editingReminder.id, payload)
+          setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+        } else {
+          const created = await createReminder(payload)
+          setReminders((prev) => [created, ...prev])
         }
 
-        const leftState = priorityOrder[left.state]
-        const rightState = priorityOrder[right.state]
+        resetForm()
+      } catch (saveError) {
+        setError(saveError instanceof Error ? saveError.message : 'Failed to save reminder')
+      }
+    }
 
-        if (leftState !== rightState) return leftState - rightState
+    void saveReminder()
+  }
 
-        return new Date(left.task.deadline as string).getTime() - new Date(right.task.deadline as string).getTime()
-      })
-  }, [tasks])
+  const handleDelete = (reminder: Reminder) => {
+    const deleteCurrent = async () => {
+      try {
+        setError('')
+        await deleteReminder(reminder.id)
+        setReminders((prev) => prev.filter((item) => item.id !== reminder.id))
 
-  const dueTodayCount = reminders.filter((reminder) => reminder.state === 'Due today').length
-  const overdueCount = reminders.filter((reminder) => reminder.state === 'Overdue').length
-  const upcomingCount = reminders.filter((reminder) => reminder.state === 'Due soon').length
-  const enabledAlertsCount = reminders.length
+        if (editingReminder?.id === reminder.id) {
+          resetForm()
+        }
+      } catch (deleteError) {
+        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete reminder')
+      }
+    }
+
+    if (window.confirm(`Delete reminder for "${reminder.task.title}"?`)) {
+      void deleteCurrent()
+    }
+  }
+
+  const handleSnooze = (reminder: Reminder) => {
+    const snoozeCurrent = async () => {
+      try {
+        setError('')
+        const updated = await snoozeReminder(reminder.id, { minutes: reminderSnoozeMinutes })
+        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+      } catch (snoozeError) {
+        setError(snoozeError instanceof Error ? snoozeError.message : 'Failed to snooze reminder')
+      }
+    }
+
+    void snoozeCurrent()
+  }
+
+  const handleDone = (reminder: Reminder) => {
+    const completeReminder = async () => {
+      try {
+        setError('')
+        const updated = await markReminderDone(reminder.id)
+        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+      } catch (completeError) {
+        setError(completeError instanceof Error ? completeError.message : 'Failed to mark reminder done')
+      }
+    }
+
+    void completeReminder()
+  }
 
   return (
     <div className={styles.shell}>
@@ -129,28 +279,121 @@ export default function Reminders() {
               <p className={styles.eyebrow}>Attention</p>
               <h2 className={styles.title}>Reminders</h2>
               <p className={styles.subtitle}>
-                Keep track of overdue work, due-soon tasks, and how the app should notify you when something needs attention.
+                Keep track of task-linked reminders, snooze them when needed, and mark them done when the work is complete.
               </p>
             </div>
-            <button className={styles.createButton} type="button">+ Add Reminder</button>
+            <button className={styles.createButton} type="button" onClick={startCreate} disabled={tasks.length === 0}>
+              + Add Reminder
+            </button>
           </div>
+
+          {error ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyText}>{error}</p>
+            </div>
+          ) : null}
+
+          {isFormOpen ? (
+            <section className={styles.panel}>
+              <p className={styles.sectionLabel}>{editingReminder ? 'Edit reminder' : 'Create reminder'}</p>
+              <div className={styles.formGrid}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="reminder-task">
+                    Task
+                  </label>
+                  <select
+                    id="reminder-task"
+                    className={styles.fieldInput}
+                    value={formState.taskId}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, taskId: e.target.value }))}
+                    disabled={tasks.length === 0}
+                  >
+                    {tasks.length === 0 ? (
+                      <option value="">No tasks available</option>
+                    ) : (
+                      tasks.map((task) => (
+                        <option key={task.id} value={task.id}>
+                          {task.title} · {task.category.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="reminder-at">
+                    Reminder time
+                  </label>
+                  <input
+                    id="reminder-at"
+                    type="datetime-local"
+                    className={styles.fieldInput}
+                    value={formState.reminderAt}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, reminderAt: e.target.value }))}
+                  />
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="reminder-note">
+                    Note
+                  </label>
+                  <textarea
+                    id="reminder-note"
+                    className={styles.fieldTextarea}
+                    value={formState.note}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, note: e.target.value }))}
+                    placeholder="Optional note for this reminder"
+                    rows={3}
+                  />
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="reminder-status">
+                    Status
+                  </label>
+                  <select
+                    id="reminder-status"
+                    className={styles.fieldInput}
+                    value={formState.status}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, status: e.target.value as ReminderStatus }))}
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="DONE">Done</option>
+                  </select>
+                </div>
+              </div>
+              <div className={styles.buttonGroup} style={{ marginTop: '16px' }}>
+                <button
+                  className={styles.createButton}
+                  type="button"
+                  onClick={handleSave}
+                  disabled={!formState.taskId || !formState.reminderAt}
+                >
+                  {editingReminder ? 'Update Reminder' : 'Create Reminder'}
+                </button>
+                <button className={styles.secondaryButton} type="button" onClick={resetForm}>
+                  Cancel
+                </button>
+              </div>
+            </section>
+          ) : null}
 
           <div className={styles.stats}>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Due today</span>
-              <strong className={styles.statValue}>{getReminderCountLabel(dueTodayCount)}</strong>
+              <strong className={styles.statValue}>{getCountLabel(dueTodayCount)}</strong>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Overdue</span>
-              <strong className={styles.statValue}>{getReminderCountLabel(overdueCount)}</strong>
+              <strong className={styles.statValue}>{getCountLabel(overdueCount)}</strong>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statLabel}>Upcoming</span>
-              <strong className={styles.statValue}>{getReminderCountLabel(upcomingCount)}</strong>
+              <strong className={styles.statValue}>{getCountLabel(upcomingCount)}</strong>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Alerts enabled</span>
-              <strong className={styles.statValue}>{getReminderCountLabel(enabledAlertsCount)}</strong>
+              <span className={styles.statLabel}>Completed</span>
+              <strong className={styles.statValue}>{getCountLabel(completedCount)}</strong>
             </div>
           </div>
 
@@ -159,34 +402,55 @@ export default function Reminders() {
             <div className={styles.list} style={{ marginTop: '16px' }}>
               {isLoading ? (
                 <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>Loading reminders from task deadlines...</p>
+                  <p className={styles.emptyText}>Loading reminders from the backend...</p>
                 </div>
-              ) : error ? (
-                <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>{error}</p>
-                </div>
-              ) : reminders.length > 0 ? (
-                reminders.map((reminder) => (
-                  <div className={styles.reminderCard} key={reminder.task.id}>
+              ) : reminderCards.length > 0 ? (
+                reminderCards.map(({ reminder, state }) => (
+                  <div className={styles.reminderCard} key={reminder.id}>
                     <div className={styles.metricRow}>
                       <div>
-                        <h4 className={styles.cardTitle}>{reminder.title}</h4>
-                        <p className={styles.cardText}>Due {reminder.dueLabel}</p>
+                        <div className={styles.tagRow}>
+                          <h4 className={styles.cardTitle}>{reminder.task.title}</h4>
+                          <span className={styles.chip}>{reminder.task.category.name}</span>
+                        </div>
+                        <p className={styles.cardText}>
+                          {reminder.note ? reminder.note : 'No note added yet.'}
+                        </p>
                       </div>
-                      <span className={`${styles.chip} ${reminder.priority === 'HIGH' ? styles.priorityHigh : reminder.priority === 'MEDIUM' ? styles.priorityMedium : styles.priorityLow}`}>
-                        {reminder.priority}
+                      <span className={`${styles.chip} ${reminderStatusClasses[reminder.status]}`}>
+                        {reminderStatusLabels[reminder.status]}
+                      </span>
+                    </div>
+                    <div className={styles.metaRow}>
+                      <span className={styles.status}>{state}</span>
+                      <span className={styles.cardText}>For {formatReminderDateTime(getEffectiveReminderTime(reminder))}</span>
+                      <span className={`${styles.chip} ${reminder.task.priority === 'HIGH' ? styles.priorityHigh : reminder.task.priority === 'MEDIUM' ? styles.priorityMedium : styles.priorityLow}`}>
+                        {reminder.task.priority}
                       </span>
                     </div>
                     <div className={styles.actionRow}>
-                      <span className={styles.status}>{reminder.state}</span>
-                      <button className={styles.secondaryButton} type="button">Snooze</button>
-                      <button className={styles.secondaryButton} type="button">Mark done</button>
+                      <button className={styles.secondaryButton} type="button" onClick={() => handleSnooze(reminder)}>
+                        Snooze 1h
+                      </button>
+                      <button className={styles.secondaryButton} type="button" onClick={() => handleDone(reminder)}>
+                        Mark done
+                      </button>
+                      <button className={styles.secondaryButton} type="button" onClick={() => startEdit(reminder)}>
+                        Edit
+                      </button>
+                      <button className={styles.secondaryButton} type="button" onClick={() => handleDelete(reminder)}>
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))
+              ) : tasks.length > 0 ? (
+                <div className={styles.emptyState}>
+                  <p className={styles.emptyText}>No active reminders yet. Create one from a task deadline or schedule a custom reminder.</p>
+                </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>No active task deadlines yet. Add a deadline to a task to see reminders here.</p>
+                  <p className={styles.emptyText}>No tasks available. Create tasks first so reminders have something to attach to.</p>
                 </div>
               )}
             </div>
@@ -206,7 +470,7 @@ export default function Reminders() {
               <div className={styles.settingRow}>
                 <div>
                   <div className={styles.itemName}>Email summaries</div>
-                  <div className={styles.itemMeta}>Send a daily overview of overdue tasks.</div>
+                  <div className={styles.itemMeta}>Send a daily overview of overdue reminders.</div>
                 </div>
                 <div className={`${styles.toggle} ${styles.toggleOff}`} />
               </div>
@@ -216,7 +480,7 @@ export default function Reminders() {
               <p className={styles.sectionLabel}>Reminder timing</p>
               <h3 className={styles.sectionTitle}>When to notify</h3>
               <p className={styles.cardText}>
-                Start with a reminder 24 hours before the deadline, then follow up again 2 hours before the task is due.
+                Use task-linked reminders to schedule a heads-up before the deadline, then snooze them when you need more time.
               </p>
               <div className={styles.buttonGroup}>
                 <button className={styles.secondaryButton} type="button">24h before</button>
