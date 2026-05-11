@@ -3,6 +3,7 @@ package com.hedi.todo.backend.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
 import com.hedi.todo.backend.entity.TaskStatus;
 import java.util.List;
@@ -26,10 +27,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	/**
 	 * Find all tasks with a specific category.
 	 *
-	 * @param category the category name to filter by
+	 * @param category the category entity to filter by
 	 * @return list of tasks in the specified category
 	 */
-	List<Task> findByCategory(String category);
+	List<Task> findByCategory(Category category);
 
 	/**
 	 * Find all tasks containing a keyword in title or description.

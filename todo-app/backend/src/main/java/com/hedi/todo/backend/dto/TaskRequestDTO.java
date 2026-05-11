@@ -34,8 +34,8 @@ public class TaskRequestDTO {
 
 	private LocalDate deadline;
 
-	@NotBlank(message = "Task category cannot be blank")
-	private String category;
+	@NotNull(message = "Task category is required")
+	private Long categoryId;
 
 	@NotNull(message = "Task status is required")
 	private TaskStatus status;
