@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import styles from './PagePlaceholder.module.css'
+import { register } from '../services/authService'
 
 export default function Register() {
   const [firstName, setFirstName] = useState('')
@@ -11,6 +12,9 @@ export default function Register() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,14 +35,19 @@ export default function Register() {
       return
     }
 
-    setIsLoading(true)
+    const performRegister = async () => {
+      try {
+        setIsLoading(true)
+        await register({ firstName, lastName, email, password, confirmPassword })
+        navigate(redirectTo, { replace: true })
+      } catch (registerError) {
+        setError(registerError instanceof Error ? registerError.message : 'Failed to create account')
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-    // TODO: Replace with actual API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // For now, just navigate to login
-      navigate('/login')
-    }, 1000)
+    void performRegister()
   }
 
   return (

@@ -290,12 +290,17 @@
   opacity: 0.75;
 }
 
+.rangeInput {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
 .toggle {
   width: 46px;
   height: 28px;
   border-radius: 999px;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
+  background: var(--accent);
+  border: 1px solid var(--accent);
   position: relative;
   flex-shrink: 0;
 }

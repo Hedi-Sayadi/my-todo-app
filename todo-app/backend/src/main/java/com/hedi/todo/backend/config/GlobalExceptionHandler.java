@@ -12,6 +12,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
 import com.hedi.todo.backend.exception.DuplicateReminderException;
@@ -29,6 +31,8 @@ import com.hedi.todo.backend.exception.TaskNotFoundException;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	/**
 	 * Handles TaskNotFoundException.
@@ -201,6 +205,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+		logger.error("Unhandled exception occurred", ex);
 		Map<String, Object> response = buildErrorResponse(
 			HttpStatus.INTERNAL_SERVER_ERROR,
 			"An unexpected error occurred"

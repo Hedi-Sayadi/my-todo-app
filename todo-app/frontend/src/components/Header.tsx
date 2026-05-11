@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { clearStoredSession } from '../services/authService'
 import styles from './Header.module.css'
 
 interface HeaderProps {
@@ -14,7 +15,7 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    // TODO: Clear user session/token
+    clearStoredSession()
     navigate('/login')
   }
 
