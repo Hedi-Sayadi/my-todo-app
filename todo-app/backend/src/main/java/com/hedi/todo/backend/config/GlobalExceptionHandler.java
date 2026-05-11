@@ -3,6 +3,7 @@ package com.hedi.todo.backend.config;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Locale;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
 import com.hedi.todo.backend.exception.DuplicateReminderException;
+import com.hedi.todo.backend.exception.InvalidCredentialsException;
+import com.hedi.todo.backend.exception.PasswordMismatchException;
 import com.hedi.todo.backend.exception.ReminderNotFoundException;
+import com.hedi.todo.backend.exception.UserAlreadyExistsException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 
 /**
@@ -87,6 +91,51 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
+	 * Handles UserAlreadyExistsException.
+	 *
+	 * @param ex the UserAlreadyExistsException
+	 * @return error response with 409 status
+	 */
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<Map<String, Object>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.CONFLICT,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+	}
+
+	/**
+	 * Handles PasswordMismatchException.
+	 *
+	 * @param ex the PasswordMismatchException
+	 * @return error response with 400 status
+	 */
+	@ExceptionHandler(PasswordMismatchException.class)
+	public ResponseEntity<Map<String, Object>> handlePasswordMismatch(PasswordMismatchException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.BAD_REQUEST,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
+	/**
+	 * Handles InvalidCredentialsException.
+	 *
+	 * @param ex the InvalidCredentialsException
+	 * @return error response with 401 status
+	 */
+	@ExceptionHandler(InvalidCredentialsException.class)
+	public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.UNAUTHORIZED,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+	}
+
+	/**
 	 * Handles IllegalArgumentException for business logic violations.
 	 *
 	 * @param ex the IllegalArgumentException
@@ -109,9 +158,14 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		String causeMessage = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+		String normalizedMessage = causeMessage != null ? causeMessage.toLowerCase(Locale.ROOT) : "";
+		String message = normalizedMessage.contains("email") || normalizedMessage.contains("users")
+			? "A user with this email already exists"
+			: "A reminder already exists for this task";
 		Map<String, Object> response = buildErrorResponse(
 			HttpStatus.CONFLICT,
-			"A reminder already exists for this task"
+			message
 		);
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
