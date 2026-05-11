@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Task;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Mapper component for converting between Task entity and DTOs.
@@ -13,7 +14,9 @@ import com.hedi.todo.backend.entity.Task;
  * to/from their corresponding DTOs.
  */
 @Component
+@RequiredArgsConstructor
 public class TaskMapper {
+	private final CategoryMapper categoryMapper;
 
 	/**
 	 * Converts a Task entity to a TaskResponseDTO.
@@ -28,7 +31,7 @@ public class TaskMapper {
 			.description(task.getDescription())
 			.priority(task.getPriority())
 			.deadline(task.getDeadline())
-			.category(task.getCategory())
+			.category(task.getCategory() != null ? categoryMapper.toResponseDTO(task.getCategory()) : null)
 			.status(task.getStatus())
 			.createdAt(task.getCreatedAt())
 			.updatedAt(task.getUpdatedAt())
@@ -37,6 +40,7 @@ public class TaskMapper {
 
 	/**
 	 * Converts a TaskRequestDTO to a Task entity.
+	 * Note: The category entity must be set by the service layer using categoryId.
 	 *
 	 * @param requestDTO the TaskRequestDTO to convert
 	 * @return a new Task entity with values from the DTO
@@ -47,13 +51,13 @@ public class TaskMapper {
 			.description(requestDTO.getDescription())
 			.priority(requestDTO.getPriority())
 			.deadline(requestDTO.getDeadline())
-			.category(requestDTO.getCategory())
 			.status(requestDTO.getStatus())
 			.build();
 	}
 
 	/**
 	 * Updates an existing Task entity with values from a TaskRequestDTO.
+	 * Note: The category entity must be set by the service layer using categoryId.
 	 *
 	 * @param requestDTO the TaskRequestDTO containing updated values
 	 * @param task the Task entity to update
@@ -64,7 +68,6 @@ public class TaskMapper {
 		task.setDescription(requestDTO.getDescription());
 		task.setPriority(requestDTO.getPriority());
 		task.setDeadline(requestDTO.getDeadline());
-		task.setCategory(requestDTO.getCategory());
 		task.setStatus(requestDTO.getStatus());
 		return task;
 	}

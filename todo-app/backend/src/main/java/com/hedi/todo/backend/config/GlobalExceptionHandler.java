@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.hedi.todo.backend.exception.CategoryNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 
 /**
@@ -35,6 +36,36 @@ public class GlobalExceptionHandler {
 			ex.getMessage()
 		);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+
+	/**
+	 * Handles CategoryNotFoundException.
+	 *
+	 * @param ex the CategoryNotFoundException
+	 * @return error response with 404 status
+	 */
+	@ExceptionHandler(CategoryNotFoundException.class)
+	public ResponseEntity<Map<String, Object>> handleCategoryNotFound(CategoryNotFoundException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.NOT_FOUND,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+
+	/**
+	 * Handles IllegalArgumentException for business logic violations.
+	 *
+	 * @param ex the IllegalArgumentException
+	 * @return error response with 400 status
+	 */
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.BAD_REQUEST,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
 
 	/**

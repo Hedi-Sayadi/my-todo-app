@@ -33,7 +33,7 @@ public class TaskResponseDTO {
 
 	private LocalDate deadline;
 
-	private String category;
+	private CategoryResponseDTO category;
 
 	private TaskStatus status;
 

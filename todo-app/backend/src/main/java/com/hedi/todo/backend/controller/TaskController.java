@@ -85,12 +85,12 @@ public class TaskController {
 	/**
 	 * Retrieves tasks filtered by category.
 	 *
-	 * @param category the category name
+	 * @param categoryId the category ID
 	 * @return 200 OK with filtered task list
 	 */
-	@GetMapping("/category/{category}")
-	public ResponseEntity<List<TaskResponseDTO>> getTasksByCategory(@PathVariable String category) {
-		List<TaskResponseDTO> tasks = taskService.getTasksByCategory(category);
+	@GetMapping("/category/{categoryId}")
+	public ResponseEntity<List<TaskResponseDTO>> getTasksByCategory(@PathVariable Long categoryId) {
+		List<TaskResponseDTO> tasks = taskService.getTasksByCategory(categoryId);
 		return ResponseEntity.ok(tasks);
 	}
 
