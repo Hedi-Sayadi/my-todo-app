@@ -6,12 +6,14 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
+import com.hedi.todo.backend.exception.DuplicateReminderException;
 import com.hedi.todo.backend.exception.ReminderNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 
@@ -70,6 +72,21 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
+	 * Handles DuplicateReminderException.
+	 *
+	 * @param ex the DuplicateReminderException
+	 * @return error response with 409 status
+	 */
+	@ExceptionHandler(DuplicateReminderException.class)
+	public ResponseEntity<Map<String, Object>> handleDuplicateReminder(DuplicateReminderException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.CONFLICT,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+	}
+
+	/**
 	 * Handles IllegalArgumentException for business logic violations.
 	 *
 	 * @param ex the IllegalArgumentException
@@ -82,6 +99,21 @@ public class GlobalExceptionHandler {
 			ex.getMessage()
 		);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	}
+
+	/**
+	 * Handles database integrity violations that can surface from unique constraints.
+	 *
+	 * @param ex the DataIntegrityViolationException
+	 * @return error response with 409 status
+	 */
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.CONFLICT,
+			"A reminder already exists for this task"
+		);
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
 	}
 
 	/**

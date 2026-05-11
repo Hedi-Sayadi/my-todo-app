@@ -11,6 +11,7 @@ import com.hedi.todo.backend.dto.ReminderResponseDTO;
 import com.hedi.todo.backend.entity.Reminder;
 import com.hedi.todo.backend.entity.ReminderStatus;
 import com.hedi.todo.backend.entity.Task;
+import com.hedi.todo.backend.exception.DuplicateReminderException;
 import com.hedi.todo.backend.exception.ReminderNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 import com.hedi.todo.backend.repository.ReminderRepository;
@@ -34,6 +35,10 @@ public class ReminderService {
 	public ReminderResponseDTO createReminder(ReminderRequestDTO requestDTO) {
 		Task task = taskRepository.findById(requestDTO.getTaskId())
 			.orElseThrow(() -> new TaskNotFoundException(requestDTO.getTaskId()));
+
+		if (reminderRepository.existsByTaskId(task.getId())) {
+			throw new DuplicateReminderException(task.getId());
+		}
 
 		Reminder reminder = reminderMapper.toEntity(requestDTO);
 		reminder.setTask(task);
@@ -65,6 +70,10 @@ public class ReminderService {
 
 		Task task = taskRepository.findById(requestDTO.getTaskId())
 			.orElseThrow(() -> new TaskNotFoundException(requestDTO.getTaskId()));
+
+		if (reminderRepository.existsByTaskIdAndIdNot(task.getId(), id)) {
+			throw new DuplicateReminderException(task.getId());
+		}
 
 		reminder.setTask(task);
 		reminderMapper.updateEntity(requestDTO, reminder);
