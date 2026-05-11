@@ -4,6 +4,23 @@ type ApiErrorResponse = {
 	errors?: Record<string, string>
 }
 
+const AUTH_STORAGE_KEY = 'todo-app-auth'
+
+type AuthStorage = {
+	token: string
+}
+
+function readAuthStorage() {
+	if (typeof window === 'undefined') return null
+
+	try {
+		const storedValue = window.localStorage.getItem(AUTH_STORAGE_KEY)
+		return storedValue ? (JSON.parse(storedValue) as AuthStorage) : null
+	} catch {
+		return null
+	}
+}
+
 async function readErrorMessage(response: Response) {
 	try {
 		const errorBody = (await response.json()) as ApiErrorResponse
@@ -22,9 +39,11 @@ async function readErrorMessage(response: Response) {
 }
 
 export async function apiRequest<T>(baseUrl: string, path = '', init?: RequestInit): Promise<T> {
+	const auth = readAuthStorage()
 	const response = await fetch(`${baseUrl}${path}`, {
 		headers: {
 			'Content-Type': 'application/json',
+			...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
 			...(init?.headers ?? {}),
 		},
 		...init,

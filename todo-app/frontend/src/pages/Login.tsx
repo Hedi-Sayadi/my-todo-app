@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import styles from './PagePlaceholder.module.css'
+import { login } from '../services/authService'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -8,6 +9,9 @@ export default function Login() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,14 +22,19 @@ export default function Login() {
       return
     }
 
-    setIsLoading(true)
-    
-    // TODO: Replace with actual API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // For now, just navigate to dashboard
-      navigate('/')
-    }, 1000)
+    const performLogin = async () => {
+      try {
+        setIsLoading(true)
+        await login({ email, password })
+        navigate(redirectTo, { replace: true })
+      } catch (loginError) {
+        setError(loginError instanceof Error ? loginError.message : 'Failed to sign in')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void performLogin()
   }
 
   return (

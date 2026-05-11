@@ -14,6 +14,9 @@ import com.hedi.todo.backend.entity.User;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 @Service
 public class JwtService {
@@ -46,6 +49,28 @@ public class JwtService {
 
 	public long getExpirationMs() {
 		return expirationMs;
+	}
+
+	public Claims validateToken(String token) throws JwtException {
+		try {
+			return Jwts.parserBuilder()
+				.setSigningKey(getSigningKey())
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
+		} catch (ExpiredJwtException e) {
+			throw new JwtException("Token has expired", e);
+		} catch (JwtException e) {
+			throw new JwtException("Invalid token", e);
+		}
+	}
+
+	public String getEmailFromToken(String token) throws JwtException {
+		return validateToken(token).getSubject();
+	}
+
+	public Long getUserIdFromToken(String token) throws JwtException {
+		return validateToken(token).get("userId", Long.class);
 	}
 
 	private Key getSigningKey() {
