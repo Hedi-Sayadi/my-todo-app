@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './Header.module.css'
 
 interface HeaderProps {
@@ -9,6 +10,13 @@ interface HeaderProps {
 
 export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSearchChange }: HeaderProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    // TODO: Clear user session/token
+    navigate('/login')
+  }
 
   return (
     <header className={styles.header}>
@@ -43,11 +51,40 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
           <span className={styles.badge}>3</span>
         </button>
 
-        <button className={styles.avatarButton} aria-label="User profile" type="button">
-          <div className={styles.avatar}>
-            <span>JD</span>
-          </div>
-        </button>
+        <div className={styles.profileMenuContainer}>
+          <button
+            className={styles.avatarButton}
+            aria-label="User profile"
+            type="button"
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          >
+            <div className={styles.avatar}>
+              <span>JD</span>
+            </div>
+          </button>
+
+          {isProfileMenuOpen && (
+            <div className={styles.profileMenu}>
+              <button
+                type="button"
+                className={styles.profileMenuItem}
+                onClick={() => {
+                  navigate('/settings')
+                  setIsProfileMenuOpen(false)
+                }}
+              >
+                Settings
+              </button>
+              <button
+                type="button"
+                className={styles.profileMenuItem}
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
