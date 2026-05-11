@@ -98,6 +98,44 @@ const defaultFormState: ReminderFormState = {
   status: 'PENDING',
 }
 
+type NotificationPreferences = {
+  browserNotifications: boolean
+  emailSummaries: boolean
+}
+
+const defaultNotificationPrefs: NotificationPreferences = {
+  browserNotifications: false,
+  emailSummaries: false,
+}
+
+const NOTIFICATION_PREFS_KEY = 'reminder-notification-prefs'
+
+function loadNotificationPreferences(): NotificationPreferences {
+  if (typeof window === 'undefined') return defaultNotificationPrefs
+
+  try {
+    const rawValue = window.localStorage.getItem(NOTIFICATION_PREFS_KEY)
+    if (!rawValue) return defaultNotificationPrefs
+
+    return { ...defaultNotificationPrefs, ...(JSON.parse(rawValue) as Partial<NotificationPreferences>) }
+  } catch {
+    return defaultNotificationPrefs
+  }
+}
+
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false
+
+  if (Notification.permission === 'granted') return true
+
+  if (Notification.permission !== 'denied') {
+    const permission = await Notification.requestPermission()
+    return permission === 'granted'
+  }
+
+  return false
+}
+
 export default function Reminders() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [reminders, setReminders] = useState<Reminder[]>([])
@@ -106,6 +144,9 @@ export default function Reminders() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)
   const [formState, setFormState] = useState<ReminderFormState>(defaultFormState)
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>(() =>
+    loadNotificationPreferences()
+  )
 
   useEffect(() => {
     let isMounted = true
@@ -137,6 +178,26 @@ export default function Reminders() {
       isMounted = false
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notificationPrefs))
+  }, [notificationPrefs])
+
+  const updateNotificationPrefs = async <K extends keyof NotificationPreferences>(
+    key: K,
+    value: NotificationPreferences[K]
+  ) => {
+    if (key === 'browserNotifications' && value === true) {
+      const permitted = await requestNotificationPermission()
+      if (!permitted) {
+        setError('Browser notifications permission denied. Please enable it in your browser settings.')
+        return
+      }
+    }
+
+    setNotificationPrefs((current) => ({ ...current, [key]: value }))
+  }
 
   const activeReminders = useMemo(() => reminders.filter((reminder) => reminder.status !== 'DONE'), [reminders])
   const completedCount = reminders.length - activeReminders.length
@@ -222,6 +283,14 @@ export default function Reminders() {
         } else {
           const created = await createReminder(payload)
           setReminders((prev) => [created, ...prev])
+
+          if (notificationPrefs.browserNotifications && 'Notification' in window) {
+            const task = tasks.find((t) => t.id === Number(formState.taskId))
+            new Notification('Reminder created', {
+              body: `Reminder set for "${task?.title || 'task'}" at ${formatReminderDateTime(created.reminderAt)}.`,
+              icon: '/favicon.ico',
+            })
+          }
         }
 
         resetForm()
@@ -273,6 +342,13 @@ export default function Reminders() {
         setError('')
         const updated = await markReminderDone(reminder.id)
         setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+
+        if (notificationPrefs.browserNotifications && 'Notification' in window) {
+          new Notification('Reminder completed', {
+            body: `Great! You completed the reminder for "${reminder.task.title}".`,
+            icon: '/favicon.ico',
+          })
+        }
       } catch (completeError) {
         setError(completeError instanceof Error ? completeError.message : 'Failed to mark reminder done')
       }
@@ -478,14 +554,24 @@ export default function Reminders() {
                   <div className={styles.itemName}>Browser notifications</div>
                   <div className={styles.itemMeta}>Show reminders while the app is open.</div>
                 </div>
-                <div className={styles.toggle} />
+                <button
+                  type="button"
+                  aria-pressed={notificationPrefs.browserNotifications}
+                  className={notificationPrefs.browserNotifications ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
+                  onClick={() => updateNotificationPrefs('browserNotifications', !notificationPrefs.browserNotifications)}
+                />
               </div>
               <div className={styles.settingRow}>
                 <div>
                   <div className={styles.itemName}>Email summaries</div>
                   <div className={styles.itemMeta}>Send a daily overview of overdue reminders.</div>
                 </div>
-                <div className={`${styles.toggle} ${styles.toggleOff}`} />
+                <button
+                  type="button"
+                  aria-pressed={notificationPrefs.emailSummaries}
+                  className={notificationPrefs.emailSummaries ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
+                  onClick={() => updateNotificationPrefs('emailSummaries', !notificationPrefs.emailSummaries)}
+                />
               </div>
             </div>
 

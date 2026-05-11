@@ -10,14 +10,12 @@ type SettingsState = {
   displayName: string
   taskReminders: boolean
   weeklySummary: boolean
-  soundAlerts: boolean
 }
 
 const defaultSettings: SettingsState = {
   displayName: '',
   taskReminders: true,
   weeklySummary: false,
-  soundAlerts: true,
 }
 
 function loadStoredSettings(): SettingsState {
@@ -64,7 +62,7 @@ export default function Settings() {
     }
 
     setSavedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setStatusMessage('Settings saved locally in your browser.')
+    setStatusMessage('✓ All changes saved')
   }
 
   const handleReset = () => {
@@ -73,7 +71,7 @@ export default function Settings() {
       displayName: accountName,
     })
     setSavedAt('')
-    setStatusMessage('Settings restored to defaults.')
+    setStatusMessage('Settings reset to defaults')
   }
 
   return (
@@ -98,8 +96,7 @@ export default function Settings() {
 
           {statusMessage && (
             <div className={styles.emptyState}>
-              <p className={styles.emptyText}>{statusMessage}</p>
-              {savedAt ? <p className={styles.emptyText}>Last saved at {savedAt}</p> : null}
+              <p className={styles.emptyText}>{statusMessage}{savedAt ? ` at ${savedAt}` : ''}</p>
             </div>
           )}
 
@@ -151,18 +148,6 @@ export default function Settings() {
                   aria-pressed={settings.weeklySummary}
                   className={settings.weeklySummary ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
                   onClick={() => updateSetting('weeklySummary', !settings.weeklySummary)}
-                />
-              </div>
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.itemName}>Sound alerts</div>
-                  <div className={styles.itemMeta}>Use a short chime for urgent reminders</div>
-                </div>
-                <button
-                  type="button"
-                  aria-pressed={settings.soundAlerts}
-                  className={settings.soundAlerts ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
-                  onClick={() => updateSetting('soundAlerts', !settings.soundAlerts)}
                 />
               </div>
             </div>
