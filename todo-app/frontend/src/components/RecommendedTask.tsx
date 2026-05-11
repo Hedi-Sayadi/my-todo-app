@@ -42,7 +42,7 @@ export default function RecommendedTask({ task, reason, onStart }: RecommendedTa
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Category</span>
-            <span className={styles.metaValue}>{task.category}</span>
+          <span className={styles.metaValue}>{task.category.name}</span>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Due</span>

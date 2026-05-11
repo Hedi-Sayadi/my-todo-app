@@ -19,13 +19,17 @@ import {
 	deleteTask,
 	listTasks,
 	updateTask as updateTaskRequest,
+	type TaskPayload,
 } from '../services/taskService'
+import { listCategories } from '../services/categoryService'
+import type { Category } from '../types/category'
 import styles from './TasksPage.module.css'
 
 export default function Tasks() {
 	const [tasks, setTasks] = useState<Task[]>([])
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [editingTask, setEditingTask] = useState<Task | null>(null)
+	const [categories, setCategories] = useState<Category[]>([])
 	const [query, setQuery] = useState('')
 	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState('')
@@ -33,14 +37,15 @@ export default function Tasks() {
 	useEffect(() => {
 		let isMounted = true
 
-		const loadTasks = async () => {
+		const loadData = async () => {
 			try {
 				setIsLoading(true)
 				setError('')
-				const data = await listTasks()
+				const [taskData, categoryData] = await Promise.all([listTasks(), listCategories()])
 
 				if (isMounted) {
-					setTasks(data)
+					setTasks(taskData)
+					setCategories(categoryData)
 				}
 			} catch (loadError) {
 				if (isMounted) {
@@ -53,7 +58,7 @@ export default function Tasks() {
 			}
 		}
 
-		void loadTasks()
+		void loadData()
 
 		return () => {
 			isMounted = false
@@ -68,7 +73,7 @@ export default function Tasks() {
 	)
 
 	const filteredTasks = tasks.filter((task) => {
-		const searchableText = [task.title, task.description, task.category, task.priority]
+		const searchableText = [task.title, task.description, task.category.name, task.priority]
 			.join(' ')
 			.toLowerCase()
 		return searchableText.includes(query.toLowerCase())
@@ -93,7 +98,7 @@ export default function Tasks() {
 		setEditingTask(null)
 	}
 
-	const handleSaveTask = (taskData: Omit<Task, 'id'>) => {
+	const handleSaveTask = (taskData: TaskPayload) => {
 		const saveTask = async () => {
 			try {
 				setError('')
@@ -148,7 +153,14 @@ export default function Tasks() {
 				prev.map((task) => (task.id === taskId ? { ...task, status: nextStatus } : task))
 			)
 
-			void updateTaskRequest(taskId, { ...currentTask, status: nextStatus })
+			void updateTaskRequest(taskId, {
+				title: currentTask.title,
+				description: currentTask.description,
+				priority: currentTask.priority,
+				deadline: currentTask.deadline,
+				categoryId: currentTask.category.id,
+				status: nextStatus,
+			})
 				.catch((dragError) => {
 					setTasks(previousTasks)
 					setError(dragError instanceof Error ? dragError.message : 'Failed to update task')
@@ -250,6 +262,7 @@ export default function Tasks() {
 			<TaskModal
 				isOpen={isModalOpen}
 				task={editingTask}
+				categories={categories}
 				onClose={handleCloseModal}
 				onSave={handleSaveTask}
 			/>

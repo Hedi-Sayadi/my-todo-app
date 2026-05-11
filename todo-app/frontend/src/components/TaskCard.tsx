@@ -60,7 +60,7 @@ function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
 			<div className={styles.content}>
 				<div className={styles.titleRow}>
 					<h3 className={styles.title}>{task.title}</h3>
-					<span className={styles.category}>{task.category}</span>
+					<span className={styles.category}>{task.category.name}</span>
 				</div>
 
 				{hasDescription ? (

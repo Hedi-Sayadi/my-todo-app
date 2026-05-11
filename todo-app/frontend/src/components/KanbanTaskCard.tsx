@@ -46,13 +46,13 @@ export default function KanbanTaskCard({ task, status, onEdit, onDelete }: Kanba
 	}
 
 	return (
-		<div ref={setNodeRef} style={style} className={styles.card} {...attributes} {...listeners}>
-			<div className={styles.cardHeader}>
+		<div ref={setNodeRef} style={style} className={styles.card}>
+			<div className={styles.cardHeader} {...attributes} {...listeners}>
 				<div className={styles.titleSection}>
 					<h4 className={styles.title}>{task.title}</h4>
-					<span className={styles.categoryBadge}>{task.category}</span>
+					<span className={styles.categoryBadge}>{task.category.name}</span>
 				</div>
-				<div className={styles.actions}>
+				<div className={styles.actions} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
 					<button
 						className={styles.iconButton}
 						onClick={(e) => {
@@ -76,7 +76,7 @@ export default function KanbanTaskCard({ task, status, onEdit, onDelete }: Kanba
 				</div>
 			</div>
 
-			{task.description && <p className={styles.description}>{task.description}</p>}
+			{task.description && <p className={styles.description} {...attributes} {...listeners}>{task.description}</p>}
 
 			<div className={styles.metadata}>
 			<span
