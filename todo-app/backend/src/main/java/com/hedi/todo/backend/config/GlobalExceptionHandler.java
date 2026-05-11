@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
+import com.hedi.todo.backend.exception.ReminderNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 
 /**
@@ -46,6 +47,21 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(CategoryNotFoundException.class)
 	public ResponseEntity<Map<String, Object>> handleCategoryNotFound(CategoryNotFoundException ex) {
+		Map<String, Object> response = buildErrorResponse(
+			HttpStatus.NOT_FOUND,
+			ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+	}
+
+	/**
+	 * Handles ReminderNotFoundException.
+	 *
+	 * @param ex the ReminderNotFoundException
+	 * @return error response with 404 status
+	 */
+	@ExceptionHandler(ReminderNotFoundException.class)
+	public ResponseEntity<Map<String, Object>> handleReminderNotFound(ReminderNotFoundException ex) {
 		Map<String, Object> response = buildErrorResponse(
 			HttpStatus.NOT_FOUND,
 			ex.getMessage()
