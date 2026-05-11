@@ -326,6 +326,41 @@
   flex-wrap: wrap;
 }
 
+.formGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.fieldInput,
+.fieldTextarea {
+  width: 100%;
+  border: 1px solid rgba(229, 228, 231, 0.9);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--text-h);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: none;
+}
+
+.fieldTextarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
 .secondaryButton {
   appearance: none;
   border: 1px solid rgba(229, 228, 231, 0.9);
@@ -357,6 +392,12 @@
   margin: 0;
   color: var(--text);
   font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

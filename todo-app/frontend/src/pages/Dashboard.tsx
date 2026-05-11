@@ -64,7 +64,7 @@ function Dashboard() {
 	const doneCount = tasks.filter((task) => task.status === 'DONE').length
 
 	const filteredTasks = tasks.filter((task) => {
-		const searchableText = [task.title, task.description, task.category, task.priority]
+		const searchableText = [task.title, task.description, task.category.name, task.priority]
 			.join(' ')
 			.toLowerCase()
 

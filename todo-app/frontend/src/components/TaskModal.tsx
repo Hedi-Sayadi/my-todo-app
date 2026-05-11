@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
+import type { Category } from '../types/category'
 import type { Task } from '../types/task'
+import type { TaskPayload } from '../services/taskService'
 import styles from './TaskModal.module.css'
 
 interface TaskModalProps {
   isOpen: boolean
   task?: Task | null
+  categories: Category[]
   onClose: () => void
-  onSave: (task: Omit<Task, 'id'>) => void
+  onSave: (task: TaskPayload) => void
 }
 
 const priorities = ['LOW', 'MEDIUM', 'HIGH']
@@ -17,12 +20,12 @@ const statusLabels: Record<'TODO' | 'IN_PROGRESS' | 'DONE', string> = {
   DONE: 'Done',
 }
 
-export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalProps) {
+export default function TaskModal({ isOpen, task, categories, onClose, onSave }: TaskModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM')
   const [deadline, setDeadline] = useState('')
-  const [category, setCategory] = useState('')
+  const [categoryId, setCategoryId] = useState('')
   const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO')
 
   useEffect(() => {
@@ -31,17 +34,17 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
       setDescription(task.description)
       setPriority(task.priority)
       setDeadline(task.deadline ?? '')
-      setCategory(task.category)
+      setCategoryId(String(task.category.id))
       setStatus(task.status)
     } else {
       setTitle('')
       setDescription('')
       setPriority('MEDIUM')
       setDeadline('')
-      setCategory('')
+      setCategoryId(categories[0] ? String(categories[0].id) : '')
       setStatus('TODO')
     }
-  }, [task, isOpen])
+  }, [task, isOpen, categories])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,7 +55,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
       description,
       priority,
       deadline,
-      category,
+      categoryId: Number(categoryId),
       status,
     })
 
@@ -60,7 +63,7 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
     setDescription('')
     setPriority('MEDIUM')
     setDeadline('')
-    setCategory('')
+      setCategoryId(categories[0] ? String(categories[0].id) : '')
     setStatus('TODO')
   }
 
@@ -154,15 +157,24 @@ export default function TaskModal({ isOpen, task, onClose, onSave }: TaskModalPr
             <label htmlFor="category" className={styles.label}>
               Category *
             </label>
-            <input
+            <select
               id="category"
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Planning"
-              className={styles.input}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className={styles.select}
               required
-            />
+              disabled={categories.length === 0}
+            >
+              {categories.length === 0 ? (
+                <option value="">No categories available</option>
+              ) : (
+                categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))
+              )}
+            </select>
           </div>
 
           <div className={styles.formGroup}>
