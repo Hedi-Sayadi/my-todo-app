@@ -1,6 +1,7 @@
 package com.hedi.todo.backend.config;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
@@ -11,7 +12,10 @@ import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
 import com.hedi.todo.backend.entity.TaskPriority;
 import com.hedi.todo.backend.entity.TaskStatus;
+import com.hedi.todo.backend.entity.Reminder;
+import com.hedi.todo.backend.entity.ReminderStatus;
 import com.hedi.todo.backend.repository.CategoryRepository;
+import com.hedi.todo.backend.repository.ReminderRepository;
 import com.hedi.todo.backend.repository.TaskRepository;
 
 /**
@@ -21,7 +25,7 @@ import com.hedi.todo.backend.repository.TaskRepository;
 public class DataSeeder {
 
 	@Bean
-	CommandLineRunner seedData(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+	CommandLineRunner seedData(TaskRepository taskRepository, CategoryRepository categoryRepository, ReminderRepository reminderRepository) {
 		return args -> {
 			// Check if data already exists
 			if (taskRepository.count() > 0) {
@@ -85,7 +89,37 @@ public class DataSeeder {
 					.build()
 			);
 
-			taskRepository.saveAll(sampleTasks);
+			List<Task> savedTasks = taskRepository.saveAll(sampleTasks);
+
+			List<Reminder> sampleReminders = List.of(
+				Reminder.builder()
+					.task(savedTasks.get(0))
+					.reminderAt(LocalDateTime.of(2026, 5, 20, 16, 0))
+					.note("Review the roadmap before sprint planning.")
+					.status(ReminderStatus.PENDING)
+					.build(),
+				Reminder.builder()
+					.task(savedTasks.get(1))
+					.reminderAt(LocalDateTime.of(2026, 5, 11, 18, 0))
+					.note("Confirm the completed setup tasks.")
+					.status(ReminderStatus.SNOOZED)
+					.snoozeUntil(LocalDateTime.of(2026, 5, 11, 17, 30))
+					.build(),
+				Reminder.builder()
+					.task(savedTasks.get(2))
+					.reminderAt(LocalDateTime.of(2026, 5, 12, 10, 0))
+					.note("Prepare the UX draft for review.")
+					.status(ReminderStatus.PENDING)
+					.build(),
+				Reminder.builder()
+					.task(savedTasks.get(3))
+					.reminderAt(LocalDateTime.of(2026, 5, 18, 11, 0))
+					.note("Check the architecture notes.")
+					.status(ReminderStatus.PENDING)
+					.build()
+			);
+
+			reminderRepository.saveAll(sampleReminders);
 		};
 	}
 
