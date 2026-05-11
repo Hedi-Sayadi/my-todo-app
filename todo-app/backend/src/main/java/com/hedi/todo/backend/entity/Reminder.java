@@ -27,7 +27,9 @@ import lombok.NoArgsConstructor;
  * Reminder entity representing a scheduled reminder for a task.
  */
 @Entity
-@Table(name = "reminders")
+@Table(name = "reminders", uniqueConstraints = {
+	@jakarta.persistence.UniqueConstraint(columnNames = "task_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

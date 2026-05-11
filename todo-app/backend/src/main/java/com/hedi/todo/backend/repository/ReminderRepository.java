@@ -16,4 +16,10 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
 	List<Reminder> findAllByOrderByReminderAtAsc();
 
 	List<Reminder> findByStatus(ReminderStatus status);
+
+	boolean existsByTaskId(Long taskId);
+
+	boolean existsByTaskIdAndIdNot(Long taskId, Long id);
+
+	java.util.Optional<Reminder> findByTaskId(Long taskId);
 }

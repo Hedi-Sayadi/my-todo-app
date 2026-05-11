@@ -140,6 +140,15 @@ export default function Reminders() {
 
   const activeReminders = useMemo(() => reminders.filter((reminder) => reminder.status !== 'DONE'), [reminders])
   const completedCount = reminders.length - activeReminders.length
+  const reminderTaskIds = useMemo(() => new Set(reminders.map((reminder) => reminder.task.id)), [reminders])
+  const availableTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (editingReminder?.task.id === task.id) return true
+        return !reminderTaskIds.has(task.id)
+      }),
+    [tasks, reminderTaskIds, editingReminder]
+  )
 
   const reminderCards = useMemo(
     () =>
@@ -170,9 +179,13 @@ export default function Reminders() {
   }
 
   const startCreate = () => {
+    if (availableTasks.length === 0) {
+      setError('All tasks already have reminders. Update an existing reminder or create a new task to add another.')
+      return
+    }
     setEditingReminder(null)
     setFormState({
-      taskId: tasks[0] ? String(tasks[0].id) : '',
+      taskId: availableTasks[0] ? String(availableTasks[0].id) : '',
       reminderAt: formatNewReminderDateTime(),
       note: '',
       status: 'PENDING',
@@ -282,7 +295,7 @@ export default function Reminders() {
                 Keep track of task-linked reminders, snooze them when needed, and mark them done when the work is complete.
               </p>
             </div>
-            <button className={styles.createButton} type="button" onClick={startCreate} disabled={tasks.length === 0}>
+            <button className={styles.createButton} type="button" onClick={startCreate}>
               + Add Reminder
             </button>
           </div>
@@ -306,12 +319,12 @@ export default function Reminders() {
                     className={styles.fieldInput}
                     value={formState.taskId}
                     onChange={(e) => setFormState((prev) => ({ ...prev, taskId: e.target.value }))}
-                    disabled={tasks.length === 0}
+                    disabled={availableTasks.length === 0}
                   >
-                    {tasks.length === 0 ? (
-                      <option value="">No tasks available</option>
+                    {availableTasks.length === 0 ? (
+                      <option value="">No tasks available for reminders</option>
                     ) : (
-                      tasks.map((task) => (
+                      availableTasks.map((task) => (
                         <option key={task.id} value={task.id}>
                           {task.title} · {task.category.name}
                         </option>
