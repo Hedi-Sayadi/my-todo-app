@@ -22,14 +22,23 @@ function readAuthStorage() {
 }
 
 async function readErrorMessage(response: Response) {
+	const contentType = response.headers.get('content-type') ?? ''
+
 	try {
-		const errorBody = (await response.json()) as ApiErrorResponse
-		if (errorBody.message) return errorBody.message
-		if (errorBody.error) return errorBody.error
-		if (errorBody.errors) {
-			return Object.entries(errorBody.errors)
-				.map(([field, message]) => `${field}: ${message}`)
-				.join(', ')
+		if (contentType.includes('application/json')) {
+			const errorBody = (await response.json()) as ApiErrorResponse
+			if (errorBody.message) return errorBody.message
+			if (errorBody.error) return errorBody.error
+			if (errorBody.errors) {
+				return Object.entries(errorBody.errors)
+					.map(([field, message]) => `${field}: ${message}`)
+					.join(', ')
+			}
+		} else {
+			const errorText = await response.text()
+			if (errorText.trim()) {
+				return errorText.replace(/\s+/g, ' ').slice(0, 180)
+			}
 		}
 	} catch {
 		// Fall through to the generic response text.
@@ -55,6 +64,14 @@ export async function apiRequest<T>(baseUrl: string, path = '', init?: RequestIn
 
 	if (response.status === 204) {
 		return undefined as T
+	}
+
+	const contentType = response.headers.get('content-type') ?? ''
+	if (!contentType.includes('application/json')) {
+		const responseText = await response.text()
+		throw new Error(
+			`Expected JSON from ${response.url || `${baseUrl}${path}`}, but received ${contentType || 'unknown content type'}: ${responseText.replace(/\s+/g, ' ').slice(0, 180)}`,
+		)
 	}
 
 	return (await response.json()) as T
