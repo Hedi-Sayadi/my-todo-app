@@ -13,10 +13,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -60,5 +63,60 @@ public class ReminderControllerTest {
                 .content(objectMapper.writeValueAsString(snooze)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(3));
+    }
+
+    @Test
+    void getAllReminders_returnsOk() throws Exception {
+        ReminderResponseDTO resp = ReminderResponseDTO.builder().id(4L).build();
+        given(reminderService.getAllReminders()).willReturn(List.of(resp));
+
+        mvc.perform(get("/api/reminders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(4));
+    }
+
+    @Test
+    void getReminderById_returnsOk() throws Exception {
+        ReminderResponseDTO resp = ReminderResponseDTO.builder().id(5L).build();
+        given(reminderService.getReminderById(5L)).willReturn(resp);
+
+        mvc.perform(get("/api/reminders/5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(5));
+    }
+
+    @Test
+    void updateReminder_returnsOk() throws Exception {
+        ReminderRequestDTO req = ReminderRequestDTO.builder()
+                .taskId(2L)
+                .reminderAt(LocalDateTime.of(2026, 5, 21, 11, 30))
+                .note("updated")
+                .status(ReminderStatus.SNOOZED)
+                .build();
+
+        ReminderResponseDTO resp = ReminderResponseDTO.builder().id(6L).note("updated").build();
+        given(reminderService.updateReminder(eq(6L), any(ReminderRequestDTO.class))).willReturn(resp);
+
+        mvc.perform(put("/api/reminders/6")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(6));
+    }
+
+    @Test
+    void markReminderDone_returnsOk() throws Exception {
+        ReminderResponseDTO resp = ReminderResponseDTO.builder().id(7L).build();
+        given(reminderService.markReminderDone(7L)).willReturn(resp);
+
+        mvc.perform(put("/api/reminders/7/done"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7));
+    }
+
+    @Test
+    void deleteReminder_returnsNoContent() throws Exception {
+        mvc.perform(delete("/api/reminders/8"))
+                .andExpect(status().isNoContent());
     }
 }
