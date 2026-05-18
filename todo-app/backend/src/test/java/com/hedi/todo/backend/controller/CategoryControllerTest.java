@@ -10,10 +10,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,5 +50,44 @@ public class CategoryControllerTest {
         mvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    void getCategoryById_returnsOk() throws Exception {
+        CategoryResponseDTO resp = CategoryResponseDTO.builder().id(2L).name("B").build();
+        given(categoryService.getCategoryById(2L)).willReturn(resp);
+
+        mvc.perform(get("/api/categories/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(2));
+    }
+
+    @Test
+    void getCategoryByName_returnsOk() throws Exception {
+        CategoryResponseDTO resp = CategoryResponseDTO.builder().id(3L).name("Work").build();
+        given(categoryService.getCategoryByName("Work")).willReturn(resp);
+
+        mvc.perform(get("/api/categories/name/Work"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3));
+    }
+
+    @Test
+    void updateCategory_returnsOk() throws Exception {
+        CategoryRequestDTO req = CategoryRequestDTO.builder().name("Updated").description("desc").build();
+        CategoryResponseDTO resp = CategoryResponseDTO.builder().id(4L).name("Updated").build();
+        given(categoryService.updateCategory(eq(4L), any(CategoryRequestDTO.class))).willReturn(resp);
+
+        mvc.perform(put("/api/categories/4")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(4));
+    }
+
+    @Test
+    void deleteCategory_returnsNoContent() throws Exception {
+        mvc.perform(delete("/api/categories/5"))
+                .andExpect(status().isNoContent());
     }
 }

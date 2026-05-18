@@ -13,12 +13,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,5 +62,72 @@ public class TaskControllerTest {
         mvc.perform(get("/api/tasks/5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(5));
+    }
+
+    @Test
+    void getAllTasks_returnsOk() throws Exception {
+        TaskResponseDTO resp = TaskResponseDTO.builder().id(1L).title("One").build();
+        given(taskService.getAllTasks()).willReturn(List.of(resp));
+
+        mvc.perform(get("/api/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1));
+    }
+
+    @Test
+    void getTasksByStatus_returnsOk() throws Exception {
+        TaskResponseDTO resp = TaskResponseDTO.builder().id(2L).title("Done").build();
+        given(taskService.getTasksByStatus(TaskStatus.DONE)).willReturn(List.of(resp));
+
+        mvc.perform(get("/api/tasks/status/DONE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(2));
+    }
+
+    @Test
+    void getTasksByCategory_returnsOk() throws Exception {
+        TaskResponseDTO resp = TaskResponseDTO.builder().id(3L).title("Cat").build();
+        given(taskService.getTasksByCategory(9L)).willReturn(List.of(resp));
+
+        mvc.perform(get("/api/tasks/category/9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(3));
+    }
+
+    @Test
+    void searchTasks_returnsOk() throws Exception {
+        TaskResponseDTO resp = TaskResponseDTO.builder().id(4L).title("Search result").build();
+        given(taskService.searchTasks("budget")).willReturn(List.of(resp));
+
+        mvc.perform(get("/api/tasks/search").param("keyword", "budget"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(4));
+    }
+
+    @Test
+    void updateTask_returnsOk() throws Exception {
+        TaskRequestDTO req = TaskRequestDTO.builder()
+                .title("Updated")
+                .description("new")
+                .priority(TaskPriority.HIGH)
+                .deadline(LocalDate.of(2026, 5, 21))
+                .categoryId(2L)
+                .status(TaskStatus.IN_PROGRESS)
+                .build();
+
+        TaskResponseDTO resp = TaskResponseDTO.builder().id(7L).title("Updated").build();
+        given(taskService.updateTask(eq(7L), any(TaskRequestDTO.class))).willReturn(resp);
+
+        mvc.perform(put("/api/tasks/7")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7));
+    }
+
+    @Test
+    void deleteTask_returnsNoContent() throws Exception {
+        mvc.perform(delete("/api/tasks/11"))
+                .andExpect(status().isNoContent());
     }
 }
