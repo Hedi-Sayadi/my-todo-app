@@ -2,11 +2,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TaskModal from './TaskModal';
+import type { Category } from '../types/category';
 import type { Task } from '../types/task';
 
-const mockCategories = [
-  { id: 1, name: 'Work', description: '' },
-  { id: 2, name: 'Personal', description: '' },
+const mockCategories: Category[] = [
+  {
+    id: 1,
+    name: 'Work',
+    description: '',
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: 2,
+    name: 'Personal',
+    description: '',
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+  },
 ];
 
 const mockTask: Task = {

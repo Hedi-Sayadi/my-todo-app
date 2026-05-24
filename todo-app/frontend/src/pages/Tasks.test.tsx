@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Tasks from '../pages/Tasks';
+import type { Category } from '../types/category';
+import type { Task } from '../types/task';
 
 vi.mock('../services/taskService', () => ({
   listTasks: vi.fn(),
@@ -125,9 +127,17 @@ import {
 } from '../services/taskService';
 import { listCategories } from '../services/categoryService';
 
-const mockCategories = [{ id: 1, name: 'Work', description: '' }];
+const mockCategories: Category[] = [
+  {
+    id: 1,
+    name: 'Work',
+    description: '',
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+  },
+];
 
-const mockTasks = [
+const mockTasks: Task[] = [
   {
     id: 1,
     title: 'Task 1',
@@ -135,7 +145,7 @@ const mockTasks = [
     status: 'TODO',
     priority: 'HIGH',
     deadline: '2026-12-31',
-    category: { id: 1, name: 'Work', description: '' },
+    category: mockCategories[0],
   },
   {
     id: 2,
@@ -144,7 +154,7 @@ const mockTasks = [
     status: 'IN_PROGRESS',
     priority: 'MEDIUM',
     deadline: null,
-    category: { id: 1, name: 'Work', description: '' },
+    category: mockCategories[0],
   },
   {
     id: 3,
@@ -153,7 +163,7 @@ const mockTasks = [
     status: 'DONE',
     priority: 'LOW',
     deadline: null,
-    category: { id: 1, name: 'Work', description: '' },
+    category: mockCategories[0],
   },
 ];
 
@@ -179,7 +189,7 @@ describe('Tasks page', () => {
     const mockedListTasks = vi.mocked(listTasks);
     const mockedListCategories = vi.mocked(listCategories);
 
-    const mockTasks = [
+    const mockTasks: Task[] = [
       {
         id: 1,
         title: 'Task 1',
@@ -187,11 +197,9 @@ describe('Tasks page', () => {
         status: 'TODO',
         priority: 'HIGH',
         deadline: '2026-12-31',
-        category: { id: 1, name: 'Work', description: '' },
+        category: mockCategories[0],
       },
     ];
-
-    const mockCategories = [{ id: 1, name: 'Work', description: '' }];
 
     mockedListTasks.mockResolvedValue(mockTasks);
     mockedListCategories.mockResolvedValue(mockCategories);
@@ -222,7 +230,7 @@ describe('Tasks page', () => {
     const mockedListTasks = vi.mocked(listTasks);
     const mockedListCategories = vi.mocked(listCategories);
 
-    const mockTasks = [
+    const mockTasks: Task[] = [
       {
         id: 1,
         title: 'Task 1',
@@ -230,7 +238,7 @@ describe('Tasks page', () => {
         status: 'TODO',
         priority: 'HIGH',
         deadline: null,
-        category: { id: 1, name: 'Work', description: '' },
+        category: mockCategories[0],
       },
       {
         id: 2,
@@ -239,7 +247,7 @@ describe('Tasks page', () => {
         status: 'IN_PROGRESS',
         priority: 'MEDIUM',
         deadline: null,
-        category: { id: 1, name: 'Work', description: '' },
+        category: mockCategories[0],
       },
       {
         id: 3,
@@ -248,12 +256,12 @@ describe('Tasks page', () => {
         status: 'DONE',
         priority: 'LOW',
         deadline: null,
-        category: { id: 1, name: 'Work', description: '' },
+        category: mockCategories[0],
       },
     ];
 
     mockedListTasks.mockResolvedValue(mockTasks);
-    mockedListCategories.mockResolvedValue([{ id: 1, name: 'Work', description: '' }]);
+    mockedListCategories.mockResolvedValue(mockCategories);
 
     render(<Tasks />);
 
@@ -280,7 +288,7 @@ describe('Tasks page', () => {
     const mockedListTasks = vi.mocked(listTasks);
     const mockedListCategories = vi.mocked(listCategories);
 
-    const mockTasks = [
+    const mockTasks: Task[] = [
       {
         id: 1,
         title: 'Buy Groceries',
@@ -288,7 +296,13 @@ describe('Tasks page', () => {
         status: 'TODO',
         priority: 'HIGH',
         deadline: null,
-        category: { id: 1, name: 'Personal', description: '' },
+        category: {
+          id: 2,
+          name: 'Personal',
+          description: '',
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2026-01-01T00:00:00Z',
+        },
       },
       {
         id: 2,
@@ -297,7 +311,7 @@ describe('Tasks page', () => {
         status: 'IN_PROGRESS',
         priority: 'MEDIUM',
         deadline: null,
-        category: { id: 2, name: 'Work', description: '' },
+        category: mockCategories[0],
       },
     ];
 
@@ -311,8 +325,8 @@ describe('Tasks page', () => {
     });
   });
 
-  async function renderLoadedTasks(tasks = mockTasks) {
-    vi.mocked(listTasks).mockResolvedValue(tasks as typeof mockTasks);
+  async function renderLoadedTasks(tasks: Task[] = mockTasks) {
+    vi.mocked(listTasks).mockResolvedValue(tasks);
     vi.mocked(listCategories).mockResolvedValue(mockCategories);
 
     render(<Tasks />);
