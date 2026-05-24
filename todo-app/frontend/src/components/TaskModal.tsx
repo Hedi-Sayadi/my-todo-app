@@ -1,54 +1,56 @@
-import { useState, useEffect } from 'react'
-import type { Category } from '../types/category'
-import type { Task } from '../types/task'
-import type { TaskPayload } from '../services/taskService'
-import styles from './TaskModal.module.css'
+import { useState, useEffect } from 'react';
+import type { Category } from '../types/category';
+import type { Task } from '../types/task';
+import type { TaskPayload } from '../services/taskService';
+import styles from './TaskModal.module.css';
 
 interface TaskModalProps {
-  isOpen: boolean
-  task?: Task | null
-  categories: Category[]
-  onClose: () => void
-  onSave: (task: TaskPayload) => void
+  isOpen: boolean;
+  task?: Task | null;
+  categories: Category[];
+  onClose: () => void;
+  onSave: (task: TaskPayload) => void;
 }
 
-const priorities = ['LOW', 'MEDIUM', 'HIGH']
-const statuses = ['TODO', 'IN_PROGRESS', 'DONE']
+const priorities = ['LOW', 'MEDIUM', 'HIGH'];
+const statuses = ['TODO', 'IN_PROGRESS', 'DONE'];
 const statusLabels: Record<'TODO' | 'IN_PROGRESS' | 'DONE', string> = {
   TODO: 'Todo',
   IN_PROGRESS: 'In progress',
   DONE: 'Done',
-}
+};
 
 export default function TaskModal({ isOpen, task, categories, onClose, onSave }: TaskModalProps) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM')
-  const [deadline, setDeadline] = useState('')
-  const [categoryId, setCategoryId] = useState('')
-  const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO')
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
+  const [deadline, setDeadline] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO');
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (task) {
-      setTitle(task.title)
-      setDescription(task.description)
-      setPriority(task.priority)
-      setDeadline(task.deadline ?? '')
-      setCategoryId(String(task.category.id))
-      setStatus(task.status)
+      setTitle(task.title);
+      setDescription(task.description);
+      setPriority(task.priority);
+      setDeadline(task.deadline ?? '');
+      setCategoryId(String(task.category.id));
+      setStatus(task.status);
     } else {
-      setTitle('')
-      setDescription('')
-      setPriority('MEDIUM')
-      setDeadline('')
-      setCategoryId(categories[0] ? String(categories[0].id) : '')
-      setStatus('TODO')
+      setTitle('');
+      setDescription('');
+      setPriority('MEDIUM');
+      setDeadline('');
+      setCategoryId(categories[0] ? String(categories[0].id) : '');
+      setStatus('TODO');
     }
-  }, [task, isOpen, categories])
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [task, isOpen, categories]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
+    e.preventDefault();
+    if (!title.trim()) return;
 
     onSave({
       title,
@@ -57,17 +59,17 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
       deadline,
       categoryId: Number(categoryId),
       status,
-    })
+    });
 
-    setTitle('')
-    setDescription('')
-    setPriority('MEDIUM')
-    setDeadline('')
-      setCategoryId(categories[0] ? String(categories[0].id) : '')
-    setStatus('TODO')
-  }
+    setTitle('');
+    setDescription('');
+    setPriority('MEDIUM');
+    setDeadline('');
+    setCategoryId(categories[0] ? String(categories[0].id) : '');
+    setStatus('TODO');
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <>
@@ -201,5 +203,5 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
         </form>
       </div>
     </>
-  )
+  );
 }

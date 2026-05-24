@@ -1,71 +1,77 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { clearStoredSession, getActiveSession } from '../services/authService'
-import { listReminders } from '../services/reminderService'
-import type { Reminder } from '../types/reminder'
-import styles from './Header.module.css'
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { clearStoredSession, getActiveSession } from '../services/authService';
+import { listReminders } from '../services/reminderService';
+import type { Reminder } from '../types/reminder';
+import styles from './Header.module.css';
 
 interface HeaderProps {
-  pageTitle?: string
-  searchValue?: string
-  onSearchChange?: (value: string) => void
+  pageTitle?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSearchChange }: HeaderProps) {
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false)
-  const [localSearchValue, setLocalSearchValue] = useState('')
-  const [reminders, setReminders] = useState<Reminder[]>([])
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false)
-  const [notificationError, setNotificationError] = useState('')
-  const navigate = useNavigate()
-  const session = getActiveSession()
-  const effectiveSearchValue = onSearchChange ? searchValue : localSearchValue
+export default function Header({
+  pageTitle = 'Dashboard',
+  searchValue = '',
+  onSearchChange,
+}: HeaderProps) {
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+  const [localSearchValue, setLocalSearchValue] = useState('');
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [notificationError, setNotificationError] = useState('');
+  const navigate = useNavigate();
+  const session = getActiveSession();
+  const effectiveSearchValue = onSearchChange ? searchValue : localSearchValue;
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadNotifications = async () => {
       try {
-        setIsLoadingNotifications(true)
-        setNotificationError('')
-        const data = await listReminders()
+        setIsLoadingNotifications(true);
+        setNotificationError('');
+        const data = await listReminders();
 
         if (isMounted) {
-          setReminders(data)
+          setReminders(data);
         }
       } catch (loadError) {
         if (isMounted) {
-          setNotificationError(loadError instanceof Error ? loadError.message : 'Failed to load notifications')
+          setNotificationError(
+            loadError instanceof Error ? loadError.message : 'Failed to load notifications'
+          );
         }
       } finally {
         if (isMounted) {
-          setIsLoadingNotifications(false)
+          setIsLoadingNotifications(false);
         }
       }
-    }
+    };
 
-    void loadNotifications()
+    void loadNotifications();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const activeNotifications = useMemo(
     () =>
       reminders
         .filter((reminder) => reminder.status !== 'DONE')
         .sort((left, right) => {
-          const leftTime = new Date(left.snoozeUntil ?? left.reminderAt).getTime()
-          const rightTime = new Date(right.snoozeUntil ?? right.reminderAt).getTime()
-          return leftTime - rightTime
+          const leftTime = new Date(left.snoozeUntil ?? left.reminderAt).getTime();
+          const rightTime = new Date(right.snoozeUntil ?? right.reminderAt).getTime();
+          return leftTime - rightTime;
         }),
     [reminders]
-  )
+  );
 
-  const notificationCount = activeNotifications.length
+  const notificationCount = activeNotifications.length;
 
   const formatNotificationDate = (value: string) =>
     new Intl.DateTimeFormat(undefined, {
@@ -73,20 +79,20 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-    }).format(new Date(value))
+    }).format(new Date(value));
 
   const profileInitials = (() => {
-    const firstNameInitial = session?.user.firstName?.trim().charAt(0) ?? ''
-    const lastNameInitial = session?.user.lastName?.trim().charAt(0) ?? ''
-    const initials = `${firstNameInitial}${lastNameInitial}`.toUpperCase()
+    const firstNameInitial = session?.user.firstName?.trim().charAt(0) ?? '';
+    const lastNameInitial = session?.user.lastName?.trim().charAt(0) ?? '';
+    const initials = `${firstNameInitial}${lastNameInitial}`.toUpperCase();
 
-    return initials || 'U'
-  })()
+    return initials || 'U';
+  })();
 
   const handleLogout = () => {
-    clearStoredSession()
-    navigate('/login')
-  }
+    clearStoredSession();
+    navigate('/login');
+  };
 
   return (
     <header className={styles.header}>
@@ -96,7 +102,13 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
 
       <div className={styles.center}>
         <div className={`${styles.searchBox} ${isSearchFocused ? styles.searchBoxFocused : ''}`}>
-          <svg className={styles.searchIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className={styles.searchIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
@@ -107,11 +119,11 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
             value={effectiveSearchValue}
             onChange={(e) => {
               if (onSearchChange) {
-                onSearchChange(e.target.value)
-                return
+                onSearchChange(e.target.value);
+                return;
               }
 
-              setLocalSearchValue(e.target.value)
+              setLocalSearchValue(e.target.value);
             }}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
@@ -128,8 +140,8 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
             aria-haspopup="menu"
             type="button"
             onClick={() => {
-              setIsNotificationMenuOpen((current) => !current)
-              setIsProfileMenuOpen(false)
+              setIsNotificationMenuOpen((current) => !current);
+              setIsProfileMenuOpen(false);
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -156,8 +168,8 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
                     type="button"
                     className={styles.notificationMenuItem}
                     onClick={() => {
-                      navigate('/reminders')
-                      setIsNotificationMenuOpen(false)
+                      navigate('/reminders');
+                      setIsNotificationMenuOpen(false);
                     }}
                   >
                     <span className={styles.notificationTitle}>{notification.task.title}</span>
@@ -172,8 +184,8 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
                 type="button"
                 className={styles.notificationMenuAction}
                 onClick={() => {
-                  navigate('/reminders')
-                  setIsNotificationMenuOpen(false)
+                  navigate('/reminders');
+                  setIsNotificationMenuOpen(false);
                 }}
               >
                 Open reminders
@@ -188,8 +200,8 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
             aria-label="User profile"
             type="button"
             onClick={() => {
-              setIsProfileMenuOpen((current) => !current)
-              setIsNotificationMenuOpen(false)
+              setIsProfileMenuOpen((current) => !current);
+              setIsNotificationMenuOpen(false);
             }}
           >
             <div className={styles.avatar}>
@@ -203,17 +215,13 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
                 type="button"
                 className={styles.profileMenuItem}
                 onClick={() => {
-                  navigate('/settings')
-                  setIsProfileMenuOpen(false)
+                  navigate('/settings');
+                  setIsProfileMenuOpen(false);
                 }}
               >
                 Settings
               </button>
-              <button
-                type="button"
-                className={styles.profileMenuItem}
-                onClick={handleLogout}
-              >
+              <button type="button" className={styles.profileMenuItem} onClick={handleLogout}>
                 Logout
               </button>
             </div>
@@ -221,5 +229,5 @@ export default function Header({ pageTitle = 'Dashboard', searchValue = '', onSe
         </div>
       </div>
     </header>
-  )
+  );
 }
