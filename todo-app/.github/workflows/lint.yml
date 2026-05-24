@@ -27,11 +27,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build frontend
+        run: npm run build
+
       - name: Run ESLint
         run: npm run lint
 
       - name: Check Prettier formatting
         run: npm run format:check
+
+      - name: Run frontend tests
+        run: npm run test
 
   backend:
     runs-on: ubuntu-latest
@@ -49,5 +55,5 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Run Maven validation
-        run: mvn -B -DskipTests validate
+      - name: Build and run backend tests
+        run: ./mvnw -B test
