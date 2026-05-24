@@ -1,32 +1,32 @@
-import { BrowserRouter, Navigate, Outlet, Routes, Route, useLocation } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Tasks from './pages/Tasks'
-import Categories from './pages/Categories'
-import Reminders from './pages/Reminders'
-import Settings from './pages/Settings'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import { getActiveSession } from './services/authService'
+import { BrowserRouter, Navigate, Outlet, Routes, Route, useLocation } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import Tasks from './pages/Tasks';
+import Categories from './pages/Categories';
+import Reminders from './pages/Reminders';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import { getActiveSession } from './services/authService';
 
 function PublicRoute() {
-	const session = getActiveSession()
+  const session = getActiveSession();
 
-	if (session) {
-		return <Navigate to="/" replace />
-	}
+  if (session) {
+    return <Navigate to="/" replace />;
+  }
 
-	return <Outlet />
+  return <Outlet />;
 }
 
 function ProtectedRoute() {
-	const session = getActiveSession()
-	const location = useLocation()
+  const session = getActiveSession();
+  const location = useLocation();
 
-	if (!session) {
-		return <Navigate to="/login" replace state={{ from: location }} />
-	}
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
 
-	return <Outlet />
+  return <Outlet />;
 }
 
 function App() {
@@ -49,7 +49,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

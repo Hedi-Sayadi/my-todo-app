@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.hedi.todo.backend.repository")
 public class BackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BackendApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(BackendApplication.class, args);
+  }
 }

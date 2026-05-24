@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import Header from '../components/Header'
-import Sidebar from '../components/Sidebar'
-import { listTasks } from '../services/taskService'
+import { useEffect, useMemo, useState } from 'react';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import { listTasks } from '../services/taskService';
 import {
   createReminder,
   deleteReminder,
@@ -10,36 +10,36 @@ import {
   snoozeReminder,
   updateReminder,
   type ReminderPayload,
-  } from '../services/reminderService'
-import type { Reminder, ReminderStatus } from '../types/reminder'
-import type { Task } from '../types/task'
-import styles from './PagePlaceholder.module.css'
+} from '../services/reminderService';
+import type { Reminder, ReminderStatus } from '../types/reminder';
+import type { Task } from '../types/task';
+import styles from './PagePlaceholder.module.css';
 
-type ReminderViewState = 'Overdue' | 'Due today' | 'Due soon'
+type ReminderViewState = 'Overdue' | 'Due today' | 'Due soon';
 
 const reminderStatusLabels: Record<ReminderStatus, string> = {
   PENDING: 'Pending',
   SNOOZED: 'Snoozed',
   DONE: 'Done',
-}
+};
 
 const reminderStatusClasses: Record<ReminderStatus, string> = {
   PENDING: styles.priorityLow,
   SNOOZED: styles.priorityMedium,
   DONE: styles.activeBadge,
-}
+};
 
 const reminderStateOrder: Record<ReminderViewState, number> = {
   Overdue: 0,
   'Due today': 1,
   'Due soon': 2,
-}
+};
 
-const reminderSnoozeMinutes = 60
-const dayMs = 24 * 60 * 60 * 1000
+const reminderSnoozeMinutes = 60;
+const dayMs = 24 * 60 * 60 * 1000;
 
 function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function formatReminderDateTime(value: string) {
@@ -48,168 +48,179 @@ function formatReminderDateTime(value: string) {
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  }).format(new Date(value))
+  }).format(new Date(value));
 }
 
 function formatDateTimeLocal(value: string) {
-  return value.slice(0, 16)
+  return value.slice(0, 16);
 }
 
 function formatNewReminderDateTime() {
-  const value = new Date(Date.now() + 60 * 60 * 1000)
-  const year = value.getFullYear()
-  const month = String(value.getMonth() + 1).padStart(2, '0')
-  const day = String(value.getDate()).padStart(2, '0')
-  const hours = String(value.getHours()).padStart(2, '0')
-  const minutes = String(value.getMinutes()).padStart(2, '0')
+  const value = new Date(Date.now() + 60 * 60 * 1000);
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
 
-  return `${year}-${month}-${day}T${hours}:${minutes}`
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function getEffectiveReminderTime(reminder: Reminder) {
-  return reminder.snoozeUntil ?? reminder.reminderAt
+  return reminder.snoozeUntil ?? reminder.reminderAt;
 }
 
 function getReminderState(reminder: Reminder, now: Date): ReminderViewState {
-  const effectiveTime = startOfDay(new Date(getEffectiveReminderTime(reminder)))
-  const today = startOfDay(now)
-  const diffDays = Math.floor((effectiveTime.getTime() - today.getTime()) / dayMs)
+  const effectiveTime = startOfDay(new Date(getEffectiveReminderTime(reminder)));
+  const today = startOfDay(now);
+  const diffDays = Math.floor((effectiveTime.getTime() - today.getTime()) / dayMs);
 
-  if (diffDays < 0) return 'Overdue'
-  if (diffDays === 0) return 'Due today'
-  return 'Due soon'
+  if (diffDays < 0) return 'Overdue';
+  if (diffDays === 0) return 'Due today';
+  return 'Due soon';
 }
 
 function getCountLabel(count: number) {
-  return count.toString().padStart(2, '0')
+  return count.toString().padStart(2, '0');
 }
 
 type ReminderFormState = {
-  taskId: string
-  reminderAt: string
-  note: string
-  status: ReminderStatus
-}
+  taskId: string;
+  reminderAt: string;
+  note: string;
+  status: ReminderStatus;
+};
 
 const defaultFormState: ReminderFormState = {
   taskId: '',
   reminderAt: formatNewReminderDateTime(),
   note: '',
   status: 'PENDING',
-}
+};
 
 type NotificationPreferences = {
-  browserNotifications: boolean
-  emailSummaries: boolean
-}
+  browserNotifications: boolean;
+  emailSummaries: boolean;
+};
 
 const defaultNotificationPrefs: NotificationPreferences = {
   browserNotifications: false,
   emailSummaries: false,
-}
+};
 
-const NOTIFICATION_PREFS_KEY = 'reminder-notification-prefs'
+const NOTIFICATION_PREFS_KEY = 'reminder-notification-prefs';
 
 function loadNotificationPreferences(): NotificationPreferences {
-  if (typeof window === 'undefined') return defaultNotificationPrefs
+  if (typeof window === 'undefined') return defaultNotificationPrefs;
 
   try {
-    const rawValue = window.localStorage.getItem(NOTIFICATION_PREFS_KEY)
-    if (!rawValue) return defaultNotificationPrefs
+    const rawValue = window.localStorage.getItem(NOTIFICATION_PREFS_KEY);
+    if (!rawValue) return defaultNotificationPrefs;
 
-    return { ...defaultNotificationPrefs, ...(JSON.parse(rawValue) as Partial<NotificationPreferences>) }
+    return {
+      ...defaultNotificationPrefs,
+      ...(JSON.parse(rawValue) as Partial<NotificationPreferences>),
+    };
   } catch {
-    return defaultNotificationPrefs
+    return defaultNotificationPrefs;
   }
 }
 
 async function requestNotificationPermission() {
-  if (!('Notification' in window)) return false
+  if (!('Notification' in window)) return false;
 
-  if (Notification.permission === 'granted') return true
+  if (Notification.permission === 'granted') return true;
 
   if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission()
-    return permission === 'granted'
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
   }
 
-  return false
+  return false;
 }
 
 export default function Reminders() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [reminders, setReminders] = useState<Reminder[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)
-  const [formState, setFormState] = useState<ReminderFormState>(defaultFormState)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+  const [formState, setFormState] = useState<ReminderFormState>(defaultFormState);
   const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>(() =>
     loadNotificationPreferences()
-  )
+  );
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadData = async () => {
       try {
-        setIsLoading(true)
-        setError('')
-        const [taskData, reminderData] = await Promise.all([listTasks(), listReminders()])
+        setIsLoading(true);
+        setError('');
+        const [taskData, reminderData] = await Promise.all([listTasks(), listReminders()]);
 
         if (isMounted) {
-          setTasks(taskData)
-          setReminders(reminderData)
+          setTasks(taskData);
+          setReminders(reminderData);
         }
       } catch (loadError) {
         if (isMounted) {
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load reminders')
+          setError(loadError instanceof Error ? loadError.message : 'Failed to load reminders');
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
-    }
+    };
 
-    void loadData()
+    void loadData();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notificationPrefs))
-  }, [notificationPrefs])
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notificationPrefs));
+  }, [notificationPrefs]);
 
   const updateNotificationPrefs = async <K extends keyof NotificationPreferences>(
     key: K,
     value: NotificationPreferences[K]
   ) => {
     if (key === 'browserNotifications' && value === true) {
-      const permitted = await requestNotificationPermission()
+      const permitted = await requestNotificationPermission();
       if (!permitted) {
-        setError('Browser notifications permission denied. Please enable it in your browser settings.')
-        return
+        setError(
+          'Browser notifications permission denied. Please enable it in your browser settings.'
+        );
+        return;
       }
     }
 
-    setNotificationPrefs((current) => ({ ...current, [key]: value }))
-  }
+    setNotificationPrefs((current) => ({ ...current, [key]: value }));
+  };
 
-  const activeReminders = useMemo(() => reminders.filter((reminder) => reminder.status !== 'DONE'), [reminders])
-  const completedCount = reminders.length - activeReminders.length
-  const reminderTaskIds = useMemo(() => new Set(reminders.map((reminder) => reminder.task.id)), [reminders])
+  const activeReminders = useMemo(
+    () => reminders.filter((reminder) => reminder.status !== 'DONE'),
+    [reminders]
+  );
+  const completedCount = reminders.length - activeReminders.length;
+  const reminderTaskIds = useMemo(
+    () => new Set(reminders.map((reminder) => reminder.task.id)),
+    [reminders]
+  );
   const availableTasks = useMemo(
     () =>
       tasks.filter((task) => {
-        if (editingReminder?.task.id === task.id) return true
-        return !reminderTaskIds.has(task.id)
+        if (editingReminder?.task.id === task.id) return true;
+        return !reminderTaskIds.has(task.id);
       }),
     [tasks, reminderTaskIds, editingReminder]
-  )
+  );
 
   const reminderCards = useMemo(
     () =>
@@ -219,143 +230,152 @@ export default function Reminders() {
           state: getReminderState(reminder, new Date()),
         }))
         .sort((left, right) => {
-          const leftState = reminderStateOrder[left.state]
-          const rightState = reminderStateOrder[right.state]
+          const leftState = reminderStateOrder[left.state];
+          const rightState = reminderStateOrder[right.state];
 
-          if (leftState !== rightState) return leftState - rightState
+          if (leftState !== rightState) return leftState - rightState;
 
-          return new Date(getEffectiveReminderTime(left.reminder)).getTime() - new Date(getEffectiveReminderTime(right.reminder)).getTime()
+          return (
+            new Date(getEffectiveReminderTime(left.reminder)).getTime() -
+            new Date(getEffectiveReminderTime(right.reminder)).getTime()
+          );
         }),
     [activeReminders]
-  )
+  );
 
-  const dueTodayCount = reminderCards.filter((item) => item.state === 'Due today').length
-  const overdueCount = reminderCards.filter((item) => item.state === 'Overdue').length
-  const upcomingCount = reminderCards.filter((item) => item.state === 'Due soon').length
+  const dueTodayCount = reminderCards.filter((item) => item.state === 'Due today').length;
+  const overdueCount = reminderCards.filter((item) => item.state === 'Overdue').length;
+  const upcomingCount = reminderCards.filter((item) => item.state === 'Due soon').length;
 
   const resetForm = () => {
-    setFormState(defaultFormState)
-    setEditingReminder(null)
-    setIsFormOpen(false)
-  }
+    setFormState(defaultFormState);
+    setEditingReminder(null);
+    setIsFormOpen(false);
+  };
 
   const startCreate = () => {
     if (availableTasks.length === 0) {
-      setError('All tasks already have reminders. Update an existing reminder or create a new task to add another.')
-      return
+      setError(
+        'All tasks already have reminders. Update an existing reminder or create a new task to add another.'
+      );
+      return;
     }
-    setEditingReminder(null)
+    setEditingReminder(null);
     setFormState({
       taskId: availableTasks[0] ? String(availableTasks[0].id) : '',
       reminderAt: formatNewReminderDateTime(),
       note: '',
       status: 'PENDING',
-    })
-    setIsFormOpen(true)
-  }
+    });
+    setIsFormOpen(true);
+  };
 
   const startEdit = (reminder: Reminder) => {
-    setEditingReminder(reminder)
+    setEditingReminder(reminder);
     setFormState({
       taskId: String(reminder.task.id),
       reminderAt: formatDateTimeLocal(reminder.reminderAt),
       note: reminder.note ?? '',
       status: reminder.status,
-    })
-    setIsFormOpen(true)
-  }
+    });
+    setIsFormOpen(true);
+  };
 
   const handleSave = () => {
     const saveReminder = async () => {
       try {
-        setError('')
+        setError('');
 
         const payload: ReminderPayload = {
           taskId: Number(formState.taskId),
           reminderAt: formState.reminderAt,
           note: formState.note,
           status: formState.status,
-        }
+        };
 
         if (editingReminder) {
-          const updated = await updateReminder(editingReminder.id, payload)
-          setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+          const updated = await updateReminder(editingReminder.id, payload);
+          setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         } else {
-          const created = await createReminder(payload)
-          setReminders((prev) => [created, ...prev])
+          const created = await createReminder(payload);
+          setReminders((prev) => [created, ...prev]);
 
           if (notificationPrefs.browserNotifications && 'Notification' in window) {
-            const task = tasks.find((t) => t.id === Number(formState.taskId))
+            const task = tasks.find((t) => t.id === Number(formState.taskId));
             new Notification('Reminder created', {
-              body: `Reminder set for "${task?.title || 'task'}" at ${formatReminderDateTime(created.reminderAt)}.`,
+              body: `Reminder set for "${task?.title || 'task'}" at ${formatReminderDateTime(
+                created.reminderAt
+              )}.`,
               icon: '/favicon.ico',
-            })
+            });
           }
         }
 
-        resetForm()
+        resetForm();
       } catch (saveError) {
-        setError(saveError instanceof Error ? saveError.message : 'Failed to save reminder')
+        setError(saveError instanceof Error ? saveError.message : 'Failed to save reminder');
       }
-    }
+    };
 
-    void saveReminder()
-  }
+    void saveReminder();
+  };
 
   const handleDelete = (reminder: Reminder) => {
     const deleteCurrent = async () => {
       try {
-        setError('')
-        await deleteReminder(reminder.id)
-        setReminders((prev) => prev.filter((item) => item.id !== reminder.id))
+        setError('');
+        await deleteReminder(reminder.id);
+        setReminders((prev) => prev.filter((item) => item.id !== reminder.id));
 
         if (editingReminder?.id === reminder.id) {
-          resetForm()
+          resetForm();
         }
       } catch (deleteError) {
-        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete reminder')
+        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete reminder');
       }
-    }
+    };
 
     if (window.confirm(`Delete reminder for "${reminder.task.title}"?`)) {
-      void deleteCurrent()
+      void deleteCurrent();
     }
-  }
+  };
 
   const handleSnooze = (reminder: Reminder) => {
     const snoozeCurrent = async () => {
       try {
-        setError('')
-        const updated = await snoozeReminder(reminder.id, { minutes: reminderSnoozeMinutes })
-        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+        setError('');
+        const updated = await snoozeReminder(reminder.id, { minutes: reminderSnoozeMinutes });
+        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
       } catch (snoozeError) {
-        setError(snoozeError instanceof Error ? snoozeError.message : 'Failed to snooze reminder')
+        setError(snoozeError instanceof Error ? snoozeError.message : 'Failed to snooze reminder');
       }
-    }
+    };
 
-    void snoozeCurrent()
-  }
+    void snoozeCurrent();
+  };
 
   const handleDone = (reminder: Reminder) => {
     const completeReminder = async () => {
       try {
-        setError('')
-        const updated = await markReminderDone(reminder.id)
-        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+        setError('');
+        const updated = await markReminderDone(reminder.id);
+        setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
 
         if (notificationPrefs.browserNotifications && 'Notification' in window) {
           new Notification('Reminder completed', {
             body: `Great! You completed the reminder for "${reminder.task.title}".`,
             icon: '/favicon.ico',
-          })
+          });
         }
       } catch (completeError) {
-        setError(completeError instanceof Error ? completeError.message : 'Failed to mark reminder done')
+        setError(
+          completeError instanceof Error ? completeError.message : 'Failed to mark reminder done'
+        );
       }
-    }
+    };
 
-    void completeReminder()
-  }
+    void completeReminder();
+  };
 
   return (
     <div className={styles.shell}>
@@ -368,7 +388,8 @@ export default function Reminders() {
               <p className={styles.eyebrow}>Attention</p>
               <h2 className={styles.title}>Reminders</h2>
               <p className={styles.subtitle}>
-                Keep track of task-linked reminders, snooze them when needed, and mark them done when the work is complete.
+                Keep track of task-linked reminders, snooze them when needed, and mark them done
+                when the work is complete.
               </p>
             </div>
             <button className={styles.createButton} type="button" onClick={startCreate}>
@@ -384,7 +405,9 @@ export default function Reminders() {
 
           {isFormOpen ? (
             <section className={styles.panel}>
-              <p className={styles.sectionLabel}>{editingReminder ? 'Edit reminder' : 'Create reminder'}</p>
+              <p className={styles.sectionLabel}>
+                {editingReminder ? 'Edit reminder' : 'Create reminder'}
+              </p>
               <div className={styles.formGrid}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.fieldLabel} htmlFor="reminder-task">
@@ -418,7 +441,9 @@ export default function Reminders() {
                     type="datetime-local"
                     className={styles.fieldInput}
                     value={formState.reminderAt}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, reminderAt: e.target.value }))}
+                    onChange={(e) =>
+                      setFormState((prev) => ({ ...prev, reminderAt: e.target.value }))
+                    }
                   />
                 </div>
 
@@ -444,7 +469,12 @@ export default function Reminders() {
                     id="reminder-status"
                     className={styles.fieldInput}
                     value={formState.status}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, status: e.target.value as ReminderStatus }))}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        status: e.target.value as ReminderStatus,
+                      }))
+                    }
                   >
                     <option value="PENDING">Pending</option>
                     <option value="DONE">Done</option>
@@ -512,22 +542,48 @@ export default function Reminders() {
                     </div>
                     <div className={styles.metaRow}>
                       <span className={styles.status}>{state}</span>
-                      <span className={styles.cardText}>For {formatReminderDateTime(getEffectiveReminderTime(reminder))}</span>
-                      <span className={`${styles.chip} ${reminder.task.priority === 'HIGH' ? styles.priorityHigh : reminder.task.priority === 'MEDIUM' ? styles.priorityMedium : styles.priorityLow}`}>
+                      <span className={styles.cardText}>
+                        For {formatReminderDateTime(getEffectiveReminderTime(reminder))}
+                      </span>
+                      <span
+                        className={`${styles.chip} ${
+                          reminder.task.priority === 'HIGH'
+                            ? styles.priorityHigh
+                            : reminder.task.priority === 'MEDIUM'
+                            ? styles.priorityMedium
+                            : styles.priorityLow
+                        }`}
+                      >
                         {reminder.task.priority}
                       </span>
                     </div>
                     <div className={styles.actionRow}>
-                      <button className={styles.secondaryButton} type="button" onClick={() => handleSnooze(reminder)}>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => handleSnooze(reminder)}
+                      >
                         Snooze 1h
                       </button>
-                      <button className={styles.secondaryButton} type="button" onClick={() => handleDone(reminder)}>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => handleDone(reminder)}
+                      >
                         Mark done
                       </button>
-                      <button className={styles.secondaryButton} type="button" onClick={() => startEdit(reminder)}>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => startEdit(reminder)}
+                      >
                         Edit
                       </button>
-                      <button className={styles.secondaryButton} type="button" onClick={() => handleDelete(reminder)}>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => handleDelete(reminder)}
+                      >
                         Delete
                       </button>
                     </div>
@@ -535,11 +591,16 @@ export default function Reminders() {
                 ))
               ) : tasks.length > 0 ? (
                 <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>No active reminders yet. Create one from a task deadline or schedule a custom reminder.</p>
+                  <p className={styles.emptyText}>
+                    No active reminders yet. Create one from a task deadline or schedule a custom
+                    reminder.
+                  </p>
                 </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <p className={styles.emptyText}>No tasks available. Create tasks first so reminders have something to attach to.</p>
+                  <p className={styles.emptyText}>
+                    No tasks available. Create tasks first so reminders have something to attach to.
+                  </p>
                 </div>
               )}
             </div>
@@ -557,8 +618,17 @@ export default function Reminders() {
                 <button
                   type="button"
                   aria-pressed={notificationPrefs.browserNotifications}
-                  className={notificationPrefs.browserNotifications ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
-                  onClick={() => updateNotificationPrefs('browserNotifications', !notificationPrefs.browserNotifications)}
+                  className={
+                    notificationPrefs.browserNotifications
+                      ? styles.toggle
+                      : `${styles.toggle} ${styles.toggleOff}`
+                  }
+                  onClick={() =>
+                    updateNotificationPrefs(
+                      'browserNotifications',
+                      !notificationPrefs.browserNotifications
+                    )
+                  }
                 />
               </div>
               <div className={styles.settingRow}>
@@ -569,8 +639,14 @@ export default function Reminders() {
                 <button
                   type="button"
                   aria-pressed={notificationPrefs.emailSummaries}
-                  className={notificationPrefs.emailSummaries ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
-                  onClick={() => updateNotificationPrefs('emailSummaries', !notificationPrefs.emailSummaries)}
+                  className={
+                    notificationPrefs.emailSummaries
+                      ? styles.toggle
+                      : `${styles.toggle} ${styles.toggleOff}`
+                  }
+                  onClick={() =>
+                    updateNotificationPrefs('emailSummaries', !notificationPrefs.emailSummaries)
+                  }
                 />
               </div>
             </div>
@@ -579,17 +655,24 @@ export default function Reminders() {
               <p className={styles.sectionLabel}>Reminder timing</p>
               <h3 className={styles.sectionTitle}>When to notify</h3>
               <p className={styles.cardText}>
-                Use task-linked reminders to schedule a heads-up before the deadline, then snooze them when you need more time.
+                Use task-linked reminders to schedule a heads-up before the deadline, then snooze
+                them when you need more time.
               </p>
               <div className={styles.buttonGroup}>
-                <button className={styles.secondaryButton} type="button">24h before</button>
-                <button className={styles.secondaryButton} type="button">2h before</button>
-                <button className={styles.secondaryButton} type="button">On due date</button>
+                <button className={styles.secondaryButton} type="button">
+                  24h before
+                </button>
+                <button className={styles.secondaryButton} type="button">
+                  2h before
+                </button>
+                <button className={styles.secondaryButton} type="button">
+                  On due date
+                </button>
               </div>
             </div>
           </section>
         </div>
       </main>
     </div>
-  )
+  );
 }

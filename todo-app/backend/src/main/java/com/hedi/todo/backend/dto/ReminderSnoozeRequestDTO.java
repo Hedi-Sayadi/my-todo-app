@@ -7,16 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * DTO for snoozing a reminder by a relative number of minutes.
- */
+/** DTO for snoozing a reminder by a relative number of minutes. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ReminderSnoozeRequestDTO {
 
-	@NotNull(message = "Snooze minutes are required")
-	@Min(value = 1, message = "Snooze minutes must be at least 1")
-	private Integer minutes;
+  @NotNull(message = "Snooze minutes are required")
+  @Min(value = 1, message = "Snooze minutes must be at least 1")
+  private Integer minutes;
 }

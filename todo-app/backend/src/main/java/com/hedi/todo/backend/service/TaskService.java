@@ -1,11 +1,5 @@
 package com.hedi.todo.backend.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Category;
@@ -16,149 +10,164 @@ import com.hedi.todo.backend.exception.TaskNotFoundException;
 import com.hedi.todo.backend.repository.CategoryRepository;
 import com.hedi.todo.backend.repository.TaskRepository;
 import com.hedi.todo.backend.util.TaskMapper;
-
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service layer for Task business logic.
- * 
- * This service provides CRUD operations and additional business logic
- * for Task entities. It handles the conversion between DTOs and entities.
+ *
+ * <p>This service provides CRUD operations and additional business logic for Task entities. It
+ * handles the conversion between DTOs and entities.
  */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class TaskService {
 
-	private final TaskRepository taskRepository;
-	private final CategoryRepository categoryRepository;
-	private final TaskMapper taskMapper;
+  private final TaskRepository taskRepository;
+  private final CategoryRepository categoryRepository;
+  private final TaskMapper taskMapper;
 
-	/**
-	 * Creates a new task.
-	 *
-	 * @param requestDTO the task data
-	 * @return the created task as ResponseDTO
-	 * @throws CategoryNotFoundException if the category is not found
-	 */
-	public TaskResponseDTO createTask(TaskRequestDTO requestDTO) {
-		// Load the category
-		Category category = categoryRepository.findById(requestDTO.getCategoryId())
-			.orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + requestDTO.getCategoryId(), requestDTO.getCategoryId()));
-		
-		Task task = taskMapper.toEntity(requestDTO);
-		task.setCategory(category);
-		Task savedTask = taskRepository.save(task);
-		return taskMapper.toResponseDTO(savedTask);
-	}
+  /**
+   * Creates a new task.
+   *
+   * @param requestDTO the task data
+   * @return the created task as ResponseDTO
+   * @throws CategoryNotFoundException if the category is not found
+   */
+  public TaskResponseDTO createTask(TaskRequestDTO requestDTO) {
+    // Load the category
+    Category category =
+        categoryRepository
+            .findById(requestDTO.getCategoryId())
+            .orElseThrow(
+                () ->
+                    new CategoryNotFoundException(
+                        "Category not found with id: " + requestDTO.getCategoryId(),
+                        requestDTO.getCategoryId()));
 
-	/**
-	 * Gets a task by its ID.
-	 *
-	 * @param id the task ID
-	 * @return the task as ResponseDTO
-	 * @throws TaskNotFoundException if the task is not found
-	 */
-	@Transactional(readOnly = true)
-	public TaskResponseDTO getTaskById(Long id) {
-		Task task = taskRepository.findById(id)
-			.orElseThrow(() -> new TaskNotFoundException(id));
-		return taskMapper.toResponseDTO(task);
-	}
+    Task task = taskMapper.toEntity(requestDTO);
+    task.setCategory(category);
+    Task savedTask = taskRepository.save(task);
+    return taskMapper.toResponseDTO(savedTask);
+  }
 
-	/**
-	 * Gets all tasks.
-	 *
-	 * @return list of all tasks as ResponseDTOs
-	 */
-	@Transactional(readOnly = true)
-	public List<TaskResponseDTO> getAllTasks() {
-		return taskRepository.findAll()
-			.stream()
-			.map(taskMapper::toResponseDTO)
-			.collect(Collectors.toList());
-	}
+  /**
+   * Gets a task by its ID.
+   *
+   * @param id the task ID
+   * @return the task as ResponseDTO
+   * @throws TaskNotFoundException if the task is not found
+   */
+  @Transactional(readOnly = true)
+  public TaskResponseDTO getTaskById(Long id) {
+    Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+    return taskMapper.toResponseDTO(task);
+  }
 
-	/**
-	 * Gets all tasks with a specific status.
-	 *
-	 * @param status the task status to filter by
-	 * @return list of tasks with the specified status
-	 */
-	@Transactional(readOnly = true)
-	public List<TaskResponseDTO> getTasksByStatus(TaskStatus status) {
-		return taskRepository.findByStatus(status)
-			.stream()
-			.map(taskMapper::toResponseDTO)
-			.collect(Collectors.toList());
-	}
+  /**
+   * Gets all tasks.
+   *
+   * @return list of all tasks as ResponseDTOs
+   */
+  @Transactional(readOnly = true)
+  public List<TaskResponseDTO> getAllTasks() {
+    return taskRepository.findAll().stream()
+        .map(taskMapper::toResponseDTO)
+        .collect(Collectors.toList());
+  }
 
-	/**
-	 * Gets all tasks in a specific category.
-	 *
-	 * @param categoryId the category ID
-	 * @return list of tasks in the specified category
-	 * @throws CategoryNotFoundException if the category is not found
-	 */
-	@Transactional(readOnly = true)
-	public List<TaskResponseDTO> getTasksByCategory(Long categoryId) {
-		Category category = categoryRepository.findById(categoryId)
-			.orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId, categoryId));
-		
-		return taskRepository.findByCategory(category)
-			.stream()
-			.map(taskMapper::toResponseDTO)
-			.collect(Collectors.toList());
-	}
+  /**
+   * Gets all tasks with a specific status.
+   *
+   * @param status the task status to filter by
+   * @return list of tasks with the specified status
+   */
+  @Transactional(readOnly = true)
+  public List<TaskResponseDTO> getTasksByStatus(TaskStatus status) {
+    return taskRepository.findByStatus(status).stream()
+        .map(taskMapper::toResponseDTO)
+        .collect(Collectors.toList());
+  }
 
-	/**
-	 * Searches for tasks by keyword in title or description.
-	 *
-	 * @param keyword the search keyword
-	 * @return list of matching tasks
-	 */
-	@Transactional(readOnly = true)
-	public List<TaskResponseDTO> searchTasks(String keyword) {
-		return taskRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword)
-			.stream()
-			.map(taskMapper::toResponseDTO)
-			.collect(Collectors.toList());
-	}
+  /**
+   * Gets all tasks in a specific category.
+   *
+   * @param categoryId the category ID
+   * @return list of tasks in the specified category
+   * @throws CategoryNotFoundException if the category is not found
+   */
+  @Transactional(readOnly = true)
+  public List<TaskResponseDTO> getTasksByCategory(Long categoryId) {
+    Category category =
+        categoryRepository
+            .findById(categoryId)
+            .orElseThrow(
+                () ->
+                    new CategoryNotFoundException(
+                        "Category not found with id: " + categoryId, categoryId));
 
-	/**
-	 * Updates an existing task.
-	 *
-	 * @param id the task ID
-	 * @param requestDTO the updated task data
-	 * @return the updated task as ResponseDTO
-	 * @throws TaskNotFoundException if the task is not found
-	 * @throws CategoryNotFoundException if the category is not found
-	 */
-	public TaskResponseDTO updateTask(Long id, TaskRequestDTO requestDTO) {
-		Task task = taskRepository.findById(id)
-			.orElseThrow(() -> new TaskNotFoundException(id));
-		
-		// Update category if categoryId is provided
-		Category category = categoryRepository.findById(requestDTO.getCategoryId())
-			.orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + requestDTO.getCategoryId(), requestDTO.getCategoryId()));
-		task.setCategory(category);
-		
-		Task updatedTask = taskMapper.updateEntity(requestDTO, task);
-		Task savedTask = taskRepository.save(updatedTask);
-		return taskMapper.toResponseDTO(savedTask);
-	}
+    return taskRepository.findByCategory(category).stream()
+        .map(taskMapper::toResponseDTO)
+        .collect(Collectors.toList());
+  }
 
-	/**
-	 * Deletes a task by its ID.
-	 *
-	 * @param id the task ID
-	 * @throws TaskNotFoundException if the task is not found
-	 */
-	public void deleteTask(Long id) {
-		if (!taskRepository.existsById(id)) {
-			throw new TaskNotFoundException(id);
-		}
-		taskRepository.deleteById(id);
-	}
+  /**
+   * Searches for tasks by keyword in title or description.
+   *
+   * @param keyword the search keyword
+   * @return list of matching tasks
+   */
+  @Transactional(readOnly = true)
+  public List<TaskResponseDTO> searchTasks(String keyword) {
+    return taskRepository
+        .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword)
+        .stream()
+        .map(taskMapper::toResponseDTO)
+        .collect(Collectors.toList());
+  }
 
+  /**
+   * Updates an existing task.
+   *
+   * @param id the task ID
+   * @param requestDTO the updated task data
+   * @return the updated task as ResponseDTO
+   * @throws TaskNotFoundException if the task is not found
+   * @throws CategoryNotFoundException if the category is not found
+   */
+  public TaskResponseDTO updateTask(Long id, TaskRequestDTO requestDTO) {
+    Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+
+    // Update category if categoryId is provided
+    Category category =
+        categoryRepository
+            .findById(requestDTO.getCategoryId())
+            .orElseThrow(
+                () ->
+                    new CategoryNotFoundException(
+                        "Category not found with id: " + requestDTO.getCategoryId(),
+                        requestDTO.getCategoryId()));
+    task.setCategory(category);
+
+    Task updatedTask = taskMapper.updateEntity(requestDTO, task);
+    Task savedTask = taskRepository.save(updatedTask);
+    return taskMapper.toResponseDTO(savedTask);
+  }
+
+  /**
+   * Deletes a task by its ID.
+   *
+   * @param id the task ID
+   * @throws TaskNotFoundException if the task is not found
+   */
+  public void deleteTask(Long id) {
+    if (!taskRepository.existsById(id)) {
+      throw new TaskNotFoundException(id);
+    }
+    taskRepository.deleteById(id);
+  }
 }

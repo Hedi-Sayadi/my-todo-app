@@ -1,9 +1,7 @@
 package com.hedi.todo.backend.dto;
 
-import java.time.LocalDateTime;
-
 import com.hedi.todo.backend.entity.UserRole;
-
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,17 +13,17 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserResponseDTO {
 
-	private Long id;
+  private Long id;
 
-	private String firstName;
+  private String firstName;
 
-	private String lastName;
+  private String lastName;
 
-	private String email;
+  private String email;
 
-	private UserRole role;
+  private UserRole role;
 
-	private LocalDateTime createdAt;
+  private LocalDateTime createdAt;
 
-	private LocalDateTime updatedAt;
+  private LocalDateTime updatedAt;
 }
