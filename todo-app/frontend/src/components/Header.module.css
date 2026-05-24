@@ -38,10 +38,7 @@
   border-radius: 24px;
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid transparent;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
   width: 100%;
   max-width: 360px;
 }
@@ -96,9 +93,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease;
   position: relative;
   width: 40px;
   height: 40px;
