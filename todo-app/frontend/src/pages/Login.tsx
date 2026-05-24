@@ -1,41 +1,42 @@
-import { useState } from 'react'
-import { useNavigate, Link, useLocation } from 'react-router-dom'
-import styles from './PagePlaceholder.module.css'
-import { login } from '../services/authService'
+import { useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import styles from './PagePlaceholder.module.css';
+import { login } from '../services/authService';
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+  const redirectTo =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/';
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    
+    e.preventDefault();
+    setError('');
+
     if (!email || !password) {
-      setError('Please fill in all fields')
-      return
+      setError('Please fill in all fields');
+      return;
     }
 
     const performLogin = async () => {
       try {
-        setIsLoading(true)
-        await login({ email, password })
-        navigate(redirectTo, { replace: true })
+        setIsLoading(true);
+        await login({ email, password });
+        navigate(redirectTo, { replace: true });
       } catch (loginError) {
-        setError(loginError instanceof Error ? loginError.message : 'Failed to sign in')
+        setError(loginError instanceof Error ? loginError.message : 'Failed to sign in');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    void performLogin()
-  }
+    void performLogin();
+  };
 
   return (
     <div className={styles.authShell}>
@@ -83,11 +84,7 @@ export default function Login() {
               />
             </div>
 
-            <button
-              type="submit"
-              className={styles.primaryButton}
-              disabled={isLoading}
-            >
+            <button type="submit" className={styles.primaryButton} disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
@@ -103,5 +100,5 @@ export default function Login() {
         </div>
       </main>
     </div>
-  )
+  );
 }

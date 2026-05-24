@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class LoginRequestDTO {
 
-	@NotBlank(message = "Email is required")
-	@Email(message = "Email must be valid")
-	@Size(max = 255, message = "Email must be at most 255 characters")
-	private String email;
+  @NotBlank(message = "Email is required")
+  @Email(message = "Email must be valid")
+  @Size(max = 255, message = "Email must be at most 255 characters")
+  private String email;
 
-	@NotBlank(message = "Password is required")
-	private String password;
+  @NotBlank(message = "Password is required")
+  private String password;
 }

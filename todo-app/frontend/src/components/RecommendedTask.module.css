@@ -6,10 +6,7 @@
   border: 2px solid var(--accent-border);
   box-shadow: var(--shadow);
   overflow: hidden;
-  transition:
-    box-shadow 240ms ease,
-    transform 240ms ease,
-    border-color 240ms ease;
+  transition: box-shadow 240ms ease, transform 240ms ease, border-color 240ms ease;
 }
 
 .card:hover {
@@ -119,9 +116,7 @@
   align-items: center;
   gap: 8px;
   justify-content: center;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
   box-shadow: var(--shadow);
   margin-top: 18px;
   width: 100%;

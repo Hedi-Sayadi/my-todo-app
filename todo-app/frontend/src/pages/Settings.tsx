@@ -1,78 +1,80 @@
-import { useEffect, useState } from 'react'
-import Header from '../components/Header'
-import Sidebar from '../components/Sidebar'
-import { getActiveSession } from '../services/authService'
-import styles from './PagePlaceholder.module.css'
+import { useEffect, useState } from 'react';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import { getActiveSession } from '../services/authService';
+import styles from './PagePlaceholder.module.css';
 
-const SETTINGS_STORAGE_KEY = 'todo-app-settings'
+const SETTINGS_STORAGE_KEY = 'todo-app-settings';
 
 type SettingsState = {
-  displayName: string
-  taskReminders: boolean
-  weeklySummary: boolean
-}
+  displayName: string;
+  taskReminders: boolean;
+  weeklySummary: boolean;
+};
 
 const defaultSettings: SettingsState = {
   displayName: '',
   taskReminders: true,
   weeklySummary: false,
-}
+};
 
 function loadStoredSettings(): SettingsState {
-  if (typeof window === 'undefined') return defaultSettings
+  if (typeof window === 'undefined') return defaultSettings;
 
   try {
-    const rawValue = window.localStorage.getItem(SETTINGS_STORAGE_KEY)
-    if (!rawValue) return defaultSettings
+    const rawValue = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (!rawValue) return defaultSettings;
 
-    return { ...defaultSettings, ...(JSON.parse(rawValue) as Partial<SettingsState>) }
+    return { ...defaultSettings, ...(JSON.parse(rawValue) as Partial<SettingsState>) };
   } catch {
-    return defaultSettings
+    return defaultSettings;
   }
 }
 
 export default function Settings() {
-  const session = getActiveSession()
-  const currentUser = session?.user
-  const accountName = currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Signed-in user'
+  const session = getActiveSession();
+  const currentUser = session?.user;
+  const accountName = currentUser
+    ? `${currentUser.firstName} ${currentUser.lastName}`
+    : 'Signed-in user';
 
   const [settings, setSettings] = useState<SettingsState>(() => {
-    const storedSettings = loadStoredSettings()
+    const storedSettings = loadStoredSettings();
     return {
       ...storedSettings,
       displayName: storedSettings.displayName || accountName,
-    }
-  })
-  const [statusMessage, setStatusMessage] = useState('')
-  const [savedAt, setSavedAt] = useState('')
+    };
+  });
+  const [statusMessage, setStatusMessage] = useState('');
+  const [savedAt, setSavedAt] = useState('');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
-  }, [settings])
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  }, [settings]);
 
   const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
-    setSettings((current) => ({ ...current, [key]: value }))
-    setStatusMessage('')
-  }
+    setSettings((current) => ({ ...current, [key]: value }));
+    setStatusMessage('');
+  };
 
   const handleSave = () => {
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     }
 
-    setSavedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
-    setStatusMessage('✓ All changes saved')
-  }
+    setSavedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    setStatusMessage('✓ All changes saved');
+  };
 
   const handleReset = () => {
     setSettings({
       ...defaultSettings,
       displayName: accountName,
-    })
-    setSavedAt('')
-    setStatusMessage('Settings reset to defaults')
-  }
+    });
+    setSavedAt('');
+    setStatusMessage('Settings reset to defaults');
+  };
 
   return (
     <div className={styles.shell}>
@@ -89,14 +91,21 @@ export default function Settings() {
               </p>
             </div>
             <div className={styles.buttonGroup}>
-              <button className={styles.createButton} type="button" onClick={handleSave}>Save Changes</button>
-              <button className={styles.secondaryButton} type="button" onClick={handleReset}>Reset</button>
+              <button className={styles.createButton} type="button" onClick={handleSave}>
+                Save Changes
+              </button>
+              <button className={styles.secondaryButton} type="button" onClick={handleReset}>
+                Reset
+              </button>
             </div>
           </div>
 
           {statusMessage && (
             <div className={styles.emptyState}>
-              <p className={styles.emptyText}>{statusMessage}{savedAt ? ` at ${savedAt}` : ''}</p>
+              <p className={styles.emptyText}>
+                {statusMessage}
+                {savedAt ? ` at ${savedAt}` : ''}
+              </p>
             </div>
           )}
 
@@ -106,7 +115,9 @@ export default function Settings() {
               <h3 className={styles.sectionTitle}>Your account info</h3>
               <div className={styles.formGrid}>
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel} htmlFor="displayName">Display name</label>
+                  <label className={styles.fieldLabel} htmlFor="displayName">
+                    Display name
+                  </label>
                   <input
                     id="displayName"
                     className={styles.fieldInput}
@@ -117,7 +128,9 @@ export default function Settings() {
                 <div className={styles.settingRow}>
                   <div>
                     <div className={styles.itemName}>Email address</div>
-                    <div className={styles.itemMeta}>{currentUser?.email ?? 'No active session'}</div>
+                    <div className={styles.itemMeta}>
+                      {currentUser?.email ?? 'No active session'}
+                    </div>
                   </div>
                   <span className={styles.chip}>Read only</span>
                 </div>
@@ -134,7 +147,9 @@ export default function Settings() {
                 <button
                   type="button"
                   aria-pressed={settings.taskReminders}
-                  className={settings.taskReminders ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
+                  className={
+                    settings.taskReminders ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`
+                  }
                   onClick={() => updateSetting('taskReminders', !settings.taskReminders)}
                 />
               </div>
@@ -146,7 +161,9 @@ export default function Settings() {
                 <button
                   type="button"
                   aria-pressed={settings.weeklySummary}
-                  className={settings.weeklySummary ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`}
+                  className={
+                    settings.weeklySummary ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`
+                  }
                   onClick={() => updateSetting('weeklySummary', !settings.weeklySummary)}
                 />
               </div>
@@ -155,5 +172,5 @@ export default function Settings() {
         </div>
       </main>
     </div>
-  )
+  );
 }

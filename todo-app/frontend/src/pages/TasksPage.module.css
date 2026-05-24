@@ -59,9 +59,7 @@
   gap: 8px;
   flex-shrink: 0;
   white-space: nowrap;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
   box-shadow: none;
 }
 
@@ -138,9 +136,7 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
   box-shadow: none;
 }
 

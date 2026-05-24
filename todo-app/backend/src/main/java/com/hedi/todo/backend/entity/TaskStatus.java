@@ -1,10 +1,8 @@
 package com.hedi.todo.backend.entity;
 
-/**
- * Enum representing the status of a task.
- */
+/** Enum representing the status of a task. */
 public enum TaskStatus {
-	TODO,
-	IN_PROGRESS,
-	DONE
+  TODO,
+  IN_PROGRESS,
+  DONE
 }

@@ -7,10 +7,7 @@
   background: #ffffff;
   border: 1.5px solid #dbe2ea;
   box-shadow: none;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    border-color 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .card:hover {
@@ -59,10 +56,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease,
-    box-shadow 160ms ease;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
 }
 
 .checkboxMark::after {
@@ -230,10 +224,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease,
-    background-color 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .secondaryButton:hover,

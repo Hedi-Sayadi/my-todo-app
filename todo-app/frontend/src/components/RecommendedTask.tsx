@@ -1,23 +1,23 @@
-import type { Task } from '../types/task'
-import styles from './RecommendedTask.module.css'
+import type { Task } from '../types/task';
+import styles from './RecommendedTask.module.css';
 
 interface RecommendedTaskProps {
-  task: Task
-  reason?: string
-  onStart?: (task: Task) => void
+  task: Task;
+  reason?: string;
+  onStart?: (task: Task) => void;
 }
 
 const priorityColors: Record<'LOW' | 'MEDIUM' | 'HIGH', string> = {
   LOW: '#10b981',
   MEDIUM: '#b45309',
   HIGH: '#991b1b',
-}
+};
 
 export default function RecommendedTask({ task, reason, onStart }: RecommendedTaskProps) {
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00')
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  }
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   return (
     <article className={styles.card}>
@@ -42,11 +42,13 @@ export default function RecommendedTask({ task, reason, onStart }: RecommendedTa
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Category</span>
-          <span className={styles.metaValue}>{task.category.name}</span>
+            <span className={styles.metaValue}>{task.category.name}</span>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Due</span>
-            <span className={styles.metaValue}>{task.deadline ? formatDate(task.deadline) : 'No deadline'}</span>
+            <span className={styles.metaValue}>
+              {task.deadline ? formatDate(task.deadline) : 'No deadline'}
+            </span>
           </div>
         </div>
 
@@ -63,5 +65,5 @@ export default function RecommendedTask({ task, reason, onStart }: RecommendedTa
 
       <div className={styles.glow} />
     </article>
-  )
+  );
 }

@@ -1,54 +1,57 @@
-import { useState } from 'react'
-import { useNavigate, Link, useLocation } from 'react-router-dom'
-import styles from './PagePlaceholder.module.css'
-import { register } from '../services/authService'
+import { useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import styles from './PagePlaceholder.module.css';
+import { register } from '../services/authService';
 
 export default function Register() {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const redirectTo = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+  const redirectTo =
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/';
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields')
-      return
+      setError('Please fill in all fields');
+      return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError('Passwords do not match');
+      return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
+      setError('Password must be at least 6 characters');
+      return;
     }
 
     const performRegister = async () => {
       try {
-        setIsLoading(true)
-        await register({ firstName, lastName, email, password, confirmPassword })
-        navigate(redirectTo, { replace: true })
+        setIsLoading(true);
+        await register({ firstName, lastName, email, password, confirmPassword });
+        navigate(redirectTo, { replace: true });
       } catch (registerError) {
-        setError(registerError instanceof Error ? registerError.message : 'Failed to create account')
+        setError(
+          registerError instanceof Error ? registerError.message : 'Failed to create account'
+        );
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    void performRegister()
-  }
+    void performRegister();
+  };
 
   return (
     <div className={styles.authShell}>
@@ -143,11 +146,7 @@ export default function Register() {
               />
             </div>
 
-            <button
-              type="submit"
-              className={styles.primaryButton}
-              disabled={isLoading}
-            >
+            <button type="submit" className={styles.primaryButton} disabled={isLoading}>
               {isLoading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
@@ -163,5 +162,5 @@ export default function Register() {
         </div>
       </main>
     </div>
-  )
+  );
 }
