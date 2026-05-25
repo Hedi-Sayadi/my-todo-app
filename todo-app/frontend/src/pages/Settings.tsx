@@ -153,7 +153,6 @@ export default function Settings() {
                   onClick={() => updateSetting('taskReminders', !settings.taskReminders)}
                 />
               </div>
-              {/* Weekly summary removed — app no longer sends summaries */}
             </div>
           </section>
         </div>
