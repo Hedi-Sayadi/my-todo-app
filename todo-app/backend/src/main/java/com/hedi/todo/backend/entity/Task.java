@@ -61,6 +61,11 @@ public class Task {
   @Column(nullable = false)
   private TaskPriority priority;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "recurrence_pattern")
+  @Builder.Default
+  private TaskRecurrence recurrencePattern = TaskRecurrence.NONE;
+
   @Column(name = "deadline")
   private LocalDate deadline;
 

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import com.hedi.todo.backend.service.TaskService;
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ public class TaskControllerTest {
             .title("T")
             .description("d")
             .priority(TaskPriority.MEDIUM)
+            .recurrencePattern(TaskRecurrence.NONE)
             .deadline(LocalDate.of(2026, 5, 20))
             .categoryId(1L)
             .status(TaskStatus.TODO)
@@ -112,6 +114,7 @@ public class TaskControllerTest {
             .title("Updated")
             .description("new")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.DAILY)
             .deadline(LocalDate.of(2026, 5, 21))
             .categoryId(2L)
             .status(TaskStatus.IN_PROGRESS)
