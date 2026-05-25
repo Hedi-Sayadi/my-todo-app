@@ -108,5 +108,20 @@ public class TaskControllerIntegrationTest {
     assertThat(listResp.getBody())
         .extracting(TaskResponseDTO::getTitle)
         .contains("Controller Task");
+
+    // delete task and verify it no longer appears in list
+    HttpEntity<Void> deleteEntity = new HttpEntity<>(headers);
+    ResponseEntity<Void> deleteResp =
+        restTemplate.exchange(
+            base + "/api/tasks/" + created.getId(), HttpMethod.DELETE, deleteEntity, Void.class);
+    assertThat(deleteResp.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+    ResponseEntity<TaskResponseDTO[]> listAfterDeleteResp =
+        restTemplate.exchange(
+            base + "/api/tasks", HttpMethod.GET, getEntity, TaskResponseDTO[].class);
+    assertThat(listAfterDeleteResp.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(listAfterDeleteResp.getBody())
+        .extracting(TaskResponseDTO::getTitle)
+        .doesNotContain("Controller Task");
   }
 }

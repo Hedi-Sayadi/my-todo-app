@@ -8,7 +8,9 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,6 +23,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "categories")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "tasks")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,6 +32,7 @@ public class Category {
   /** Unique identifier for the category. */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @EqualsAndHashCode.Include
   private Long id;
 
   /** The name of the category. Must be unique and non-blank. */

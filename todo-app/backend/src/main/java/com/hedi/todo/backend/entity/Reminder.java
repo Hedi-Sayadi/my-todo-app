@@ -17,7 +17,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -27,6 +29,8 @@ import org.hibernate.annotations.UpdateTimestamp;
     name = "reminders",
     uniqueConstraints = {@jakarta.persistence.UniqueConstraint(columnNames = "task_id")})
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "task")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,6 +38,7 @@ public class Reminder {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @EqualsAndHashCode.Include
   private Long id;
 
   @NotNull(message = "Reminder task is required")
