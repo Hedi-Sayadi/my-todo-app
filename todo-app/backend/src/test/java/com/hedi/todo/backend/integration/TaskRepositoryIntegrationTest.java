@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import com.hedi.todo.backend.repository.CategoryRepository;
 import com.hedi.todo.backend.repository.TaskRepository;
@@ -51,6 +52,7 @@ public class TaskRepositoryIntegrationTest {
             .title("Integration Test Task")
             .description("created by Testcontainers")
             .priority(TaskPriority.MEDIUM)
+            .recurrencePattern(TaskRecurrence.NONE)
             .status(TaskStatus.TODO)
             .category(savedCat)
             .build();

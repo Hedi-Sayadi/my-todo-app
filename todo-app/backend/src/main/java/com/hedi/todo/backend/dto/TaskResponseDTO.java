@@ -1,6 +1,7 @@
 package com.hedi.todo.backend.dto;
 
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +29,8 @@ public class TaskResponseDTO {
   private String description;
 
   private TaskPriority priority;
+
+  private TaskRecurrence recurrencePattern;
 
   private LocalDate deadline;
 

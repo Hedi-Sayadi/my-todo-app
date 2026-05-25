@@ -7,6 +7,7 @@ export type TaskPayload = {
   title: string;
   description: string;
   priority: Task['priority'];
+  recurrencePattern: Task['recurrencePattern'];
   deadline: string | null;
   categoryId: number;
   status: Task['status'];

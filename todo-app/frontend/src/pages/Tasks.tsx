@@ -34,6 +34,11 @@ export default function Tasks() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const refreshTasks = async () => {
+    const taskData = await listTasks();
+    setTasks(taskData);
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -105,6 +110,15 @@ export default function Tasks() {
         if (editingTask) {
           const updatedTask = await updateTaskRequest(editingTask.id, taskData);
           setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
+
+          const shouldRefresh =
+            editingTask.status !== 'DONE' &&
+            taskData.status === 'DONE' &&
+            taskData.recurrencePattern !== 'NONE';
+
+          if (shouldRefresh) {
+            await refreshTasks();
+          }
         } else {
           const createdTask = await createTask(taskData);
           setTasks((prev) => [createdTask, ...prev]);
@@ -148,6 +162,10 @@ export default function Tasks() {
 
       const previousTasks = tasks;
       const nextStatus = overStatus as Task['status'];
+      const shouldRefresh =
+        currentTask.status !== 'DONE' &&
+        nextStatus === 'DONE' &&
+        currentTask.recurrencePattern !== 'NONE';
 
       setTasks((prev) =>
         prev.map((task) => (task.id === taskId ? { ...task, status: nextStatus } : task))
@@ -157,13 +175,20 @@ export default function Tasks() {
         title: currentTask.title,
         description: currentTask.description,
         priority: currentTask.priority,
+        recurrencePattern: currentTask.recurrencePattern,
         deadline: currentTask.deadline,
         categoryId: currentTask.category.id,
         status: nextStatus,
-      }).catch((dragError) => {
-        setTasks(previousTasks);
-        setError(dragError instanceof Error ? dragError.message : 'Failed to update task');
-      });
+      })
+        .then(async () => {
+          if (shouldRefresh) {
+            await refreshTasks();
+          }
+        })
+        .catch((dragError) => {
+          setTasks(previousTasks);
+          setError(dragError instanceof Error ? dragError.message : 'Failed to update task');
+        });
     }
   };
 

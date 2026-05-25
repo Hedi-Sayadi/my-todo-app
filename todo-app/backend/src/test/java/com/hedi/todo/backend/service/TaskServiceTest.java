@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
@@ -59,6 +61,7 @@ class TaskServiceTest {
             .title("Finish report")
             .description("Prepare monthly summary")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.NONE)
             .deadline(LocalDate.of(2026, 5, 20))
             .categoryId(11L)
             .status(TaskStatus.TODO)
@@ -70,6 +73,7 @@ class TaskServiceTest {
             .title("Finish report")
             .description("Prepare monthly summary")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.NONE)
             .deadline(LocalDate.of(2026, 5, 20))
             .category(category)
             .status(TaskStatus.TODO)
@@ -83,6 +87,7 @@ class TaskServiceTest {
             .title("Finish report")
             .description("Prepare monthly summary")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.NONE)
             .deadline(LocalDate.of(2026, 5, 20))
             .category(
                 CategoryResponseDTO.builder()
@@ -234,6 +239,94 @@ class TaskServiceTest {
 
     assertThat(result).isEqualTo(updatedResponse);
     assertThat(task.getCategory()).isEqualTo(category);
+  }
+
+  @Test
+  void updateRecurringCompletedTaskShouldCreateNextOccurrence() {
+    Task recurringTask =
+        Task.builder()
+            .id(7L)
+            .title("Finish report")
+            .description("Prepare monthly summary")
+            .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .deadline(LocalDate.of(2026, 5, 20))
+            .category(category)
+            .status(TaskStatus.IN_PROGRESS)
+            .build();
+
+    TaskRequestDTO doneRequest =
+        TaskRequestDTO.builder()
+            .title("Finish report")
+            .description("Prepare monthly summary")
+            .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .deadline(LocalDate.of(2026, 5, 20))
+            .categoryId(11L)
+            .status(TaskStatus.DONE)
+            .build();
+
+    Task completedTask =
+        Task.builder()
+            .id(7L)
+            .title("Finish report")
+            .description("Prepare monthly summary")
+            .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .deadline(LocalDate.of(2026, 5, 20))
+            .category(category)
+            .status(TaskStatus.DONE)
+            .build();
+
+    Task nextOccurrence =
+        Task.builder()
+            .title("Finish report")
+            .description("Prepare monthly summary")
+            .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .deadline(LocalDate.of(2026, 5, 27))
+            .category(category)
+            .status(TaskStatus.TODO)
+            .build();
+
+    TaskResponseDTO completedResponse =
+        TaskResponseDTO.builder()
+            .id(7L)
+            .title("Finish report")
+            .description("Prepare monthly summary")
+            .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .deadline(LocalDate.of(2026, 5, 20))
+            .category(
+                CategoryResponseDTO.builder()
+                    .id(11L)
+                    .name("Work")
+                    .description("Work tasks")
+                    .build())
+            .status(TaskStatus.DONE)
+            .build();
+
+    when(taskRepository.findById(7L)).thenReturn(Optional.of(recurringTask));
+    when(categoryRepository.findById(11L)).thenReturn(Optional.of(category));
+    when(taskMapper.updateEntity(doneRequest, recurringTask)).thenReturn(completedTask);
+    when(taskRepository.save(any(Task.class)))
+        .thenAnswer(
+            invocation -> {
+              Task savedTask = invocation.getArgument(0);
+              if (savedTask.getStatus() == TaskStatus.DONE) {
+                return completedTask;
+              }
+              return nextOccurrence;
+            });
+    when(taskMapper.toResponseDTO(completedTask)).thenReturn(completedResponse);
+
+    TaskResponseDTO result = taskService.updateTask(7L, doneRequest);
+
+    assertThat(result).isEqualTo(completedResponse);
+    verify(taskRepository, times(2)).save(taskCaptor.capture());
+    assertThat(taskCaptor.getAllValues()).hasSize(2);
+    assertThat(taskCaptor.getAllValues().get(1).getDeadline()).isEqualTo(LocalDate.of(2026, 5, 27));
+    assertThat(taskCaptor.getAllValues().get(1).getStatus()).isEqualTo(TaskStatus.TODO);
   }
 
   @Test
