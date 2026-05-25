@@ -22,7 +22,9 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -35,6 +37,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(name = "tasks")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"category", "reminders"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -42,6 +46,7 @@ public class Task {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @EqualsAndHashCode.Include
   private Long id;
 
   @NotBlank(message = "Task title cannot be blank")
