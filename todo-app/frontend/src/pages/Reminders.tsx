@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import { listTasks } from '../services/taskService';
@@ -70,6 +70,33 @@ function getEffectiveReminderTime(reminder: Reminder) {
   return reminder.snoozeUntil ?? reminder.reminderAt;
 }
 
+function toGoogleCalendarDateString(d: Date) {
+  // produce YYYYMMDDTHHMMSSZ (UTC) expected by Google Calendar
+  const iso = d.toISOString();
+  return iso.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function openAddToGoogleCalendar(reminder: Reminder) {
+  const start = new Date(getEffectiveReminderTime(reminder));
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+  const startStr = toGoogleCalendarDateString(start);
+  const endStr = toGoogleCalendarDateString(end);
+
+  const title = reminder.task.title;
+  const details = reminder.note ?? '';
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${startStr}/${endStr}`,
+    details,
+  });
+
+  const url = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  window.open(url, '_blank');
+}
+
 function getReminderState(reminder: Reminder, now: Date): ReminderViewState {
   const effectiveTime = startOfDay(new Date(getEffectiveReminderTime(reminder)));
   const today = startOfDay(now);
@@ -100,12 +127,10 @@ const defaultFormState: ReminderFormState = {
 
 type NotificationPreferences = {
   browserNotifications: boolean;
-  emailSummaries: boolean;
 };
 
 const defaultNotificationPrefs: NotificationPreferences = {
   browserNotifications: false,
-  emailSummaries: false,
 };
 
 const NOTIFICATION_PREFS_KEY = 'reminder-notification-prefs';
@@ -150,6 +175,8 @@ export default function Reminders() {
   const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences>(() =>
     loadNotificationPreferences()
   );
+
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -281,6 +308,19 @@ export default function Reminders() {
     setIsFormOpen(true);
   };
 
+  useEffect(() => {
+    if (!isFormOpen || typeof window === 'undefined') return;
+
+    const node = formRef.current;
+    if (node) {
+      node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const input = node.querySelector('input, textarea, select') as HTMLElement | null;
+      if (input) input.focus();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [isFormOpen, editingReminder]);
+
   const handleSave = () => {
     const saveReminder = async () => {
       try {
@@ -404,7 +444,7 @@ export default function Reminders() {
           ) : null}
 
           {isFormOpen ? (
-            <section className={styles.panel}>
+            <section className={styles.panel} ref={formRef}>
               <p className={styles.sectionLabel}>
                 {editingReminder ? 'Edit reminder' : 'Create reminder'}
               </p>
@@ -550,8 +590,8 @@ export default function Reminders() {
                           reminder.task.priority === 'HIGH'
                             ? styles.priorityHigh
                             : reminder.task.priority === 'MEDIUM'
-                              ? styles.priorityMedium
-                              : styles.priorityLow
+                            ? styles.priorityMedium
+                            : styles.priorityLow
                         }`}
                       >
                         {reminder.task.priority}
@@ -585,6 +625,13 @@ export default function Reminders() {
                         onClick={() => handleDelete(reminder)}
                       >
                         Delete
+                      </button>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => openAddToGoogleCalendar(reminder)}
+                      >
+                        Add to Google Calendar
                       </button>
                     </div>
                   </div>
@@ -628,24 +675,6 @@ export default function Reminders() {
                       'browserNotifications',
                       !notificationPrefs.browserNotifications
                     )
-                  }
-                />
-              </div>
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.itemName}>Email summaries</div>
-                  <div className={styles.itemMeta}>Send a daily overview of overdue reminders.</div>
-                </div>
-                <button
-                  type="button"
-                  aria-pressed={notificationPrefs.emailSummaries}
-                  className={
-                    notificationPrefs.emailSummaries
-                      ? styles.toggle
-                      : `${styles.toggle} ${styles.toggleOff}`
-                  }
-                  onClick={() =>
-                    updateNotificationPrefs('emailSummaries', !notificationPrefs.emailSummaries)
                   }
                 />
               </div>
