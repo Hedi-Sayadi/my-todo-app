@@ -3,6 +3,7 @@ package com.hedi.todo.backend.util;
 import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Task;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +31,7 @@ public class TaskMapper {
         .description(task.getDescription())
         .priority(task.getPriority())
         .recurrencePattern(
-          task.getRecurrencePattern() != null ? task.getRecurrencePattern() : TaskRecurrence.NONE)
+            task.getRecurrencePattern() != null ? task.getRecurrencePattern() : TaskRecurrence.NONE)
         .deadline(task.getDeadline())
         .category(
             task.getCategory() != null ? categoryMapper.toResponseDTO(task.getCategory()) : null)
@@ -53,9 +54,9 @@ public class TaskMapper {
         .description(requestDTO.getDescription())
         .priority(requestDTO.getPriority())
         .recurrencePattern(
-          requestDTO.getRecurrencePattern() != null
-            ? requestDTO.getRecurrencePattern()
-            : TaskRecurrence.NONE)
+            requestDTO.getRecurrencePattern() != null
+                ? requestDTO.getRecurrencePattern()
+                : TaskRecurrence.NONE)
         .deadline(requestDTO.getDeadline())
         .status(requestDTO.getStatus())
         .build();

@@ -92,6 +92,7 @@ describe('taskService', () => {
         title: '',
         description: '',
         priority: 'LOW',
+        recurrencePattern: 'NONE',
         deadline: null,
         categoryId: 1,
         status: 'TODO',

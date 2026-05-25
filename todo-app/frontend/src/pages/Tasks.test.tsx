@@ -302,6 +302,7 @@ describe('Tasks page', () => {
         description: 'Milk, bread, eggs',
         status: 'TODO',
         priority: 'HIGH',
+        recurrencePattern: 'NONE',
         deadline: null,
         category: {
           id: 2,
@@ -317,6 +318,7 @@ describe('Tasks page', () => {
         description: 'Login page error',
         status: 'IN_PROGRESS',
         priority: 'MEDIUM',
+        recurrencePattern: 'NONE',
         deadline: null,
         category: mockCategories[0],
       },
