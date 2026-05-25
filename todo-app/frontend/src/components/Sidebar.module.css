@@ -84,7 +84,10 @@
   color: var(--text-h);
   background: transparent;
   cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 
 .navItem:hover {

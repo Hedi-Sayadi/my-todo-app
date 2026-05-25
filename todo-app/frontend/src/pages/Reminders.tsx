@@ -550,8 +550,8 @@ export default function Reminders() {
                           reminder.task.priority === 'HIGH'
                             ? styles.priorityHigh
                             : reminder.task.priority === 'MEDIUM'
-                            ? styles.priorityMedium
-                            : styles.priorityLow
+                              ? styles.priorityMedium
+                              : styles.priorityLow
                         }`}
                       >
                         {reminder.task.priority}
