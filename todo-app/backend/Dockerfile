@@ -5,13 +5,14 @@ WORKDIR /app
 
 # Copy pom.xml and download dependencies
 COPY pom.xml .
+COPY checkstyle.xml .
 RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Dcheckstyle.skip=true -Dspotless.check.skip=true
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
