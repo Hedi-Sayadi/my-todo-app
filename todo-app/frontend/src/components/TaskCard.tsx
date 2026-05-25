@@ -13,6 +13,13 @@ const priorityLabels: Record<Task['priority'], string> = {
   HIGH: 'High',
 };
 
+const recurrenceLabels: Record<Task['recurrencePattern'], string> = {
+  NONE: 'Does not repeat',
+  DAILY: 'Repeats daily',
+  WEEKLY: 'Repeats weekly',
+  MONTHLY: 'Repeats monthly',
+};
+
 const statusLabels: Record<Task['status'], string> = {
   TODO: 'Todo',
   IN_PROGRESS: 'In progress',
@@ -65,6 +72,10 @@ function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
           <div className={styles.metaItem}>
             <dt>Deadline</dt>
             <dd>{formatDeadline(task.deadline)}</dd>
+          </div>
+          <div className={styles.metaItem}>
+            <dt>Recurrence</dt>
+            <dd>{recurrenceLabels[task.recurrencePattern]}</dd>
           </div>
           <div className={styles.metaItem}>
             <dt>Status</dt>

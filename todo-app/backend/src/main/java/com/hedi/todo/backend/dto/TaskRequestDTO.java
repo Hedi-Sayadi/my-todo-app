@@ -1,6 +1,7 @@
 package com.hedi.todo.backend.dto;
 
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +30,8 @@ public class TaskRequestDTO {
 
   @NotNull(message = "Task priority is required")
   private TaskPriority priority;
+
+  private TaskRecurrence recurrencePattern = TaskRecurrence.NONE;
 
   private LocalDate deadline;
 

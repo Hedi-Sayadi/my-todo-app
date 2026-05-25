@@ -13,17 +13,27 @@ interface TaskModalProps {
 }
 
 const priorities = ['LOW', 'MEDIUM', 'HIGH'];
+const recurrencePatterns = ['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'] as const;
 const statuses = ['TODO', 'IN_PROGRESS', 'DONE'];
 const statusLabels: Record<'TODO' | 'IN_PROGRESS' | 'DONE', string> = {
   TODO: 'Todo',
   IN_PROGRESS: 'In progress',
   DONE: 'Done',
 };
+const recurrenceLabels: Record<(typeof recurrencePatterns)[number], string> = {
+  NONE: 'Does not repeat',
+  DAILY: 'Daily',
+  WEEKLY: 'Weekly',
+  MONTHLY: 'Monthly',
+};
 
 export default function TaskModal({ isOpen, task, categories, onClose, onSave }: TaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
+  const [recurrencePattern, setRecurrencePattern] = useState<
+    'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY'
+  >('NONE');
   const [deadline, setDeadline] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [status, setStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO');
@@ -34,6 +44,7 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
       setTitle(task.title);
       setDescription(task.description);
       setPriority(task.priority);
+      setRecurrencePattern(task.recurrencePattern);
       setDeadline(task.deadline ?? '');
       setCategoryId(String(task.category.id));
       setStatus(task.status);
@@ -41,6 +52,7 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
       setTitle('');
       setDescription('');
       setPriority('MEDIUM');
+      setRecurrencePattern('NONE');
       setDeadline('');
       setCategoryId(categories[0] ? String(categories[0].id) : '');
       setStatus('TODO');
@@ -56,6 +68,7 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
       title,
       description,
       priority,
+      recurrencePattern,
       deadline,
       categoryId: Number(categoryId),
       status,
@@ -64,6 +77,7 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
     setTitle('');
     setDescription('');
     setPriority('MEDIUM');
+    setRecurrencePattern('NONE');
     setDeadline('');
     setCategoryId(categories[0] ? String(categories[0].id) : '');
     setStatus('TODO');
@@ -153,6 +167,26 @@ export default function TaskModal({ isOpen, task, categories, onClose, onSave }:
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="recurrencePattern" className={styles.label}>
+              Recurrence
+            </label>
+            <select
+              id="recurrencePattern"
+              value={recurrencePattern}
+              onChange={(e) =>
+                setRecurrencePattern(e.target.value as 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY')
+              }
+              className={styles.select}
+            >
+              {recurrencePatterns.map((pattern) => (
+                <option key={pattern} value={pattern}>
+                  {recurrenceLabels[pattern]}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className={styles.formGroup}>

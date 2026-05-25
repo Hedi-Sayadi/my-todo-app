@@ -7,6 +7,7 @@ import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ public class TaskMapperTest {
             .title("T")
             .description("d")
             .priority(TaskPriority.MEDIUM)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
             .deadline(LocalDate.of(2026, 1, 1))
             .category(c)
             .status(TaskStatus.TODO)
@@ -36,6 +38,7 @@ public class TaskMapperTest {
     assertThat(dto.getId()).isEqualTo(5L);
     assertThat(dto.getCategory()).isNotNull();
     assertThat(dto.getCategory().getId()).isEqualTo(3L);
+    assertThat(dto.getRecurrencePattern()).isEqualTo(TaskRecurrence.WEEKLY);
   }
 
   @Test
@@ -52,6 +55,7 @@ public class TaskMapperTest {
             .title("Title")
             .description("Desc")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.DAILY)
             .deadline(LocalDate.of(2026, 5, 1))
             .status(TaskStatus.TODO)
             .build();
@@ -61,6 +65,7 @@ public class TaskMapperTest {
     assertThat(entity).isNotNull();
     assertThat(entity.getTitle()).isEqualTo("Title");
     assertThat(entity.getPriority()).isEqualTo(TaskPriority.HIGH);
+    assertThat(entity.getRecurrencePattern()).isEqualTo(TaskRecurrence.DAILY);
     assertThat(entity.getDeadline()).isEqualTo(LocalDate.of(2026, 5, 1));
   }
 
@@ -71,6 +76,7 @@ public class TaskMapperTest {
             .title("Old")
             .description("old")
             .priority(TaskPriority.LOW)
+            .recurrencePattern(TaskRecurrence.NONE)
             .status(TaskStatus.TODO)
             .build();
     TaskRequestDTO req =
@@ -78,11 +84,13 @@ public class TaskMapperTest {
             .title("New")
             .description("new")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.MONTHLY)
             .status(TaskStatus.DONE)
             .build();
     mapper.updateEntity(req, t);
     assertThat(t.getTitle()).isEqualTo("New");
     assertThat(t.getPriority()).isEqualTo(TaskPriority.HIGH);
+    assertThat(t.getRecurrencePattern()).isEqualTo(TaskRecurrence.MONTHLY);
     assertThat(t.getStatus()).isEqualTo(TaskStatus.DONE);
   }
 }

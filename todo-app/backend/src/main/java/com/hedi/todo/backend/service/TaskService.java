@@ -4,12 +4,14 @@ import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.Task;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import com.hedi.todo.backend.exception.CategoryNotFoundException;
 import com.hedi.todo.backend.exception.TaskNotFoundException;
 import com.hedi.todo.backend.repository.CategoryRepository;
 import com.hedi.todo.backend.repository.TaskRepository;
 import com.hedi.todo.backend.util.TaskMapper;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -141,6 +143,7 @@ public class TaskService {
    */
   public TaskResponseDTO updateTask(Long id, TaskRequestDTO requestDTO) {
     Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+    TaskStatus previousStatus = task.getStatus();
 
     // Update category if categoryId is provided
     Category category =
@@ -155,6 +158,11 @@ public class TaskService {
 
     Task updatedTask = taskMapper.updateEntity(requestDTO, task);
     Task savedTask = taskRepository.save(updatedTask);
+
+    if (shouldCreateNextOccurrence(previousStatus, requestDTO)) {
+      taskRepository.save(createNextOccurrence(savedTask));
+    }
+
     return taskMapper.toResponseDTO(savedTask);
   }
 
@@ -169,5 +177,37 @@ public class TaskService {
       throw new TaskNotFoundException(id);
     }
     taskRepository.deleteById(id);
+  }
+
+  private boolean shouldCreateNextOccurrence(TaskStatus previousStatus, TaskRequestDTO requestDTO) {
+    return previousStatus != TaskStatus.DONE
+        && requestDTO.getStatus() == TaskStatus.DONE
+        && requestDTO.getRecurrencePattern() != TaskRecurrence.NONE;
+  }
+
+  private Task createNextOccurrence(Task completedTask) {
+    return Task.builder()
+        .title(completedTask.getTitle())
+        .description(completedTask.getDescription())
+        .priority(completedTask.getPriority())
+        .recurrencePattern(completedTask.getRecurrencePattern())
+        .deadline(
+            advanceDeadline(completedTask.getDeadline(), completedTask.getRecurrencePattern()))
+        .category(completedTask.getCategory())
+        .status(TaskStatus.TODO)
+        .build();
+  }
+
+  private LocalDate advanceDeadline(LocalDate deadline, TaskRecurrence recurrencePattern) {
+    if (deadline == null || recurrencePattern == null) {
+      return deadline;
+    }
+
+    return switch (recurrencePattern) {
+      case DAILY -> deadline.plusDays(1);
+      case WEEKLY -> deadline.plusWeeks(1);
+      case MONTHLY -> deadline.plusMonths(1);
+      case NONE -> deadline;
+    };
   }
 }

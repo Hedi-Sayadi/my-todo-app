@@ -28,6 +28,7 @@ const mockTask: Task = {
   description: 'Task Description',
   status: 'TODO',
   priority: 'HIGH',
+  recurrencePattern: 'WEEKLY',
   deadline: '2026-12-31',
   category: mockCategories[0],
 };

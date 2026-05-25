@@ -8,6 +8,7 @@ import com.hedi.todo.backend.dto.TaskRequestDTO;
 import com.hedi.todo.backend.dto.TaskResponseDTO;
 import com.hedi.todo.backend.entity.Category;
 import com.hedi.todo.backend.entity.TaskPriority;
+import com.hedi.todo.backend.entity.TaskRecurrence;
 import com.hedi.todo.backend.entity.TaskStatus;
 import com.hedi.todo.backend.repository.CategoryRepository;
 import java.time.LocalDate;
@@ -83,6 +84,7 @@ public class TaskControllerIntegrationTest {
             .title("Controller Task")
             .description("via TestRestTemplate")
             .priority(TaskPriority.HIGH)
+            .recurrencePattern(TaskRecurrence.NONE)
             .status(TaskStatus.TODO)
             .categoryId(saved.getId())
             .deadline(LocalDate.now().plusDays(1))
@@ -123,5 +125,79 @@ public class TaskControllerIntegrationTest {
     assertThat(listAfterDeleteResp.getBody())
         .extracting(TaskResponseDTO::getTitle)
         .doesNotContain("Controller Task");
+  }
+
+  @Test
+  void completingRecurringTaskCreatesFollowUp() {
+    RegisterRequestDTO reg =
+        RegisterRequestDTO.builder()
+            .firstName("Repeat")
+            .lastName("User")
+            .email("repeat@example.com")
+            .password("password123")
+            .confirmPassword("password123")
+            .build();
+
+    String base = "http://localhost:" + port;
+
+    ResponseEntity<AuthResponseDTO> regResp =
+        restTemplate.postForEntity(base + "/api/auth/register", reg, AuthResponseDTO.class);
+    assertThat(regResp.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    String token = regResp.getBody().getToken();
+
+    Category c = new Category();
+    c.setName("RecurringCategory");
+    Category saved = categoryRepository.save(c);
+
+    TaskRequestDTO createReq =
+        TaskRequestDTO.builder()
+            .title("Weekly Review")
+            .description("Review the backlog")
+            .priority(TaskPriority.MEDIUM)
+            .recurrencePattern(TaskRecurrence.WEEKLY)
+            .status(TaskStatus.TODO)
+            .categoryId(saved.getId())
+            .deadline(LocalDate.now().plusDays(7))
+            .build();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(token);
+
+    ResponseEntity<TaskResponseDTO> createResp =
+        restTemplate.exchange(
+            base + "/api/tasks",
+            HttpMethod.POST,
+            new HttpEntity<>(createReq, headers),
+            TaskResponseDTO.class);
+    assertThat(createResp.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+    TaskResponseDTO created = createResp.getBody();
+
+    TaskRequestDTO completeReq =
+        TaskRequestDTO.builder()
+            .title(created.getTitle())
+            .description(created.getDescription())
+            .priority(created.getPriority())
+            .recurrencePattern(created.getRecurrencePattern())
+            .status(TaskStatus.DONE)
+            .categoryId(created.getCategory().getId())
+            .deadline(created.getDeadline())
+            .build();
+
+    restTemplate.exchange(
+        base + "/api/tasks/" + created.getId(),
+        HttpMethod.PUT,
+        new HttpEntity<>(completeReq, headers),
+        TaskResponseDTO.class);
+
+    ResponseEntity<TaskResponseDTO[]> listResp =
+        restTemplate.exchange(
+            base + "/api/tasks",
+            HttpMethod.GET,
+            new HttpEntity<>(headers),
+            TaskResponseDTO[].class);
+    assertThat(listResp.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(listResp.getBody()).hasSizeGreaterThanOrEqualTo(2);
+    assertThat(listResp.getBody()).extracting(TaskResponseDTO::getTitle).contains("Weekly Review");
   }
 }
