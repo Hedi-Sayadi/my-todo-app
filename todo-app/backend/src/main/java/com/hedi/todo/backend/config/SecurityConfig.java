@@ -33,10 +33,11 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             authorize ->
-          authorize
-              .requestMatchers("/api/auth/**", "/api/health")
-            .permitAll()
-            .anyRequest().authenticated())
+                authorize
+                    .requestMatchers("/api/auth/**", "/api/health")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
