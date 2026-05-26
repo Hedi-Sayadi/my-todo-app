@@ -153,20 +153,6 @@ export default function Settings() {
                   onClick={() => updateSetting('taskReminders', !settings.taskReminders)}
                 />
               </div>
-              <div className={styles.settingRow}>
-                <div>
-                  <div className={styles.itemName}>Weekly summary</div>
-                  <div className={styles.itemMeta}>Send a status digest every Monday</div>
-                </div>
-                <button
-                  type="button"
-                  aria-pressed={settings.weeklySummary}
-                  className={
-                    settings.weeklySummary ? styles.toggle : `${styles.toggle} ${styles.toggleOff}`
-                  }
-                  onClick={() => updateSetting('weeklySummary', !settings.weeklySummary)}
-                />
-              </div>
             </div>
           </section>
         </div>
