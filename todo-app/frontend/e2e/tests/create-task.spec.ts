@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { ensureTestUser, cleanupTasks, cleanupCategories, createCategoryViaApi, type TestSession } from '../helpers';
+import {
+  ensureTestUser,
+  cleanupTasks,
+  cleanupCategories,
+  createCategoryViaApi,
+  type TestSession,
+} from '../helpers';
 
 test.describe('Tasks - system tests', () => {
   let session: TestSession;

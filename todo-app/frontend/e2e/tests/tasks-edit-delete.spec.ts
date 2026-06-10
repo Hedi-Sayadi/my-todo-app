@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { ensureTestUser, cleanupTasks, cleanupCategories, createCategoryViaApi, type TestSession } from '../helpers';
+import {
+  ensureTestUser,
+  cleanupTasks,
+  cleanupCategories,
+  createCategoryViaApi,
+  type TestSession,
+} from '../helpers';
 
 test.describe('Tasks edit/delete - system tests', () => {
   let session: TestSession;
@@ -38,7 +44,9 @@ test.describe('Tasks edit/delete - system tests', () => {
     await page.fill('#title', title);
     await page.fill('#description', 'Will be edited');
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/tasks') && (r.status() === 201 || r.status() === 200)),
+      page.waitForResponse(
+        (r) => r.url().includes('/api/tasks') && (r.status() === 201 || r.status() === 200)
+      ),
       page.getByRole('button', { name: 'Create Task' }).click(),
     ]);
 
@@ -50,7 +58,7 @@ test.describe('Tasks edit/delete - system tests', () => {
     const newTitle = title + ' - updated';
     await page.fill('#title', newTitle);
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/tasks') && (r.status() === 200)),
+      page.waitForResponse((r) => r.url().includes('/api/tasks') && r.status() === 200),
       page.getByRole('button', { name: 'Update Task' }).click(),
     ]);
 
