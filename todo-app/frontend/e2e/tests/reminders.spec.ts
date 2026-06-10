@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { ensureTestUser, cleanupTasks, cleanupReminders, createTaskViaApi, type TestSession } from '../helpers';
+import {
+  ensureTestUser,
+  cleanupTasks,
+  cleanupReminders,
+  createTaskViaApi,
+  type TestSession,
+} from '../helpers';
 
 test.describe('Reminders - system tests', () => {
   let session: TestSession;
@@ -26,7 +32,10 @@ test.describe('Reminders - system tests', () => {
 
     // create a task via API so we have something to attach a reminder to
     const title = `E2E Task For Reminder ${Date.now()}`;
-    const created = await createTaskViaApi(page, base, session.token, { title, description: 'for reminder' });
+    const created = await createTaskViaApi(page, base, session.token, {
+      title,
+      description: 'for reminder',
+    });
 
     await page.goto(base + '/reminders');
     await page.waitForSelector('text=+ Add Reminder');
@@ -48,7 +57,9 @@ test.describe('Reminders - system tests', () => {
     await page.fill('#reminder-note', 'E2E reminder note');
 
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/reminders') && (r.status() === 201 || r.status() === 200)),
+      page.waitForResponse(
+        (r) => r.url().includes('/api/reminders') && (r.status() === 201 || r.status() === 200)
+      ),
       page.getByRole('button', { name: 'Create Reminder' }).click(),
     ]);
 
@@ -59,6 +70,8 @@ test.describe('Reminders - system tests', () => {
     await page.click(`div:has(h4:has-text("${title}")) button:has-text("Mark done")`);
 
     // the status chip should change to Done (we assert that the Mark done button is no longer present)
-    await expect(page.locator(`div:has(h4:has-text("${title}")) button:has-text("Mark done")`)).toHaveCount(0);
+    await expect(
+      page.locator(`div:has(h4:has-text("${title}")) button:has-text("Mark done")`)
+    ).toHaveCount(0);
   });
 });

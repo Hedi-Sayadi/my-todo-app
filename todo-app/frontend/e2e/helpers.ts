@@ -85,7 +85,9 @@ export async function ensureTestUser(
 export async function cleanupTasks(page: Page, baseURL: string, token: string) {
   const backend = process.env.BACKEND_URL ?? 'http://localhost:8080';
   const tasksUrl = `${backend.replace(/\/$/, '')}/api/tasks`;
-  const listResp = await page.request.get(tasksUrl, { headers: { Authorization: `Bearer ${token}` } });
+  const listResp = await page.request.get(tasksUrl, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!listResp.ok()) {
     const text = await listResp.text();
     throw new Error(`E2E: cleanup tasks list failed: ${listResp.status()} ${text}`);
@@ -97,7 +99,9 @@ export async function cleanupTasks(page: Page, baseURL: string, token: string) {
   }
   const tasks = (await listResp.json()) as Array<{ id: number }>;
   await Promise.all(
-    tasks.map((t) => page.request.delete(`${tasksUrl}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } }))
+    tasks.map((t) =>
+      page.request.delete(`${tasksUrl}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } })
+    )
   );
 }
 
@@ -117,7 +121,9 @@ export async function cleanupCategories(page: Page, baseURL: string, token: stri
   }
   const items = (await listResp.json()) as Array<{ id: number }>;
   await Promise.all(
-    items.map((t) => page.request.delete(`${url}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } }))
+    items.map((t) =>
+      page.request.delete(`${url}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } })
+    )
   );
 }
 
@@ -136,7 +142,9 @@ export async function cleanupReminders(page: Page, baseURL: string, token: strin
   }
   const items = (await listResp.json()) as Array<{ id: number }>;
   await Promise.all(
-    items.map((t) => page.request.delete(`${url}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } }))
+    items.map((t) =>
+      page.request.delete(`${url}/${t.id}`, { headers: { Authorization: `Bearer ${token}` } })
+    )
   );
 }
 

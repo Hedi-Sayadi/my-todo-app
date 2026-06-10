@@ -33,7 +33,9 @@ test.describe('Categories - system tests', () => {
     await page.fill('#category-description', desc);
 
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/api/categories') && (r.status() === 201 || r.status() === 200)),
+      page.waitForResponse(
+        (r) => r.url().includes('/api/categories') && (r.status() === 201 || r.status() === 200)
+      ),
       page.getByRole('button', { name: 'Create Category' }).click(),
     ]);
 
