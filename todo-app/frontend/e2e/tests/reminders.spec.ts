@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { ensureTestUser, cleanupTasks, cleanupReminders, createTaskViaApi } from '../helpers';
+import { ensureTestUser, cleanupTasks, cleanupReminders, createTaskViaApi, type TestSession } from '../helpers';
 
 test.describe('Reminders - system tests', () => {
-  let session: any;
+  let session: TestSession;
 
   test.beforeEach(async ({ page, baseURL }, testInfo) => {
     const base = baseURL ?? 'http://localhost:3000';
-const backend = process.env.BACKEND_URL ?? 'http://localhost:8080';
-const email = `e2e-reminders-${testInfo.workerIndex}@example.com`;
-session = await ensureTestUser(page, base, { backendUrl: backend, email });
+    const backend = process.env.BACKEND_URL ?? 'http://localhost:8080';
+    const email = `e2e-reminders-${testInfo.workerIndex}@example.com`;
+    session = await ensureTestUser(page, base, { backendUrl: backend, email });
     await cleanupReminders(page, base, session.token);
     await cleanupTasks(page, base, session.token);
   });
