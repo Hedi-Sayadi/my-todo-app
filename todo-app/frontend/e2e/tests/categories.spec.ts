@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { ensureTestUser, cleanupCategories, cleanupTasks } from '../helpers';
+import { ensureTestUser, cleanupCategories, cleanupTasks, type TestSession } from '../helpers';
 
 test.describe('Categories - system tests', () => {
-  let session: any;
+  let session: TestSession;
 
   test.beforeEach(async ({ page, baseURL }) => {
     const base = baseURL ?? 'http://localhost:3000';

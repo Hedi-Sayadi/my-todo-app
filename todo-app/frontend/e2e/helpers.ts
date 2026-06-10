@@ -2,11 +2,17 @@ import type { Page, APIResponse } from '@playwright/test';
 
 const AUTH_STORAGE_KEY = 'todo-app-auth';
 
+export type TestSession = {
+  token: string;
+  user: unknown;
+  expiresAt: number;
+};
+
 type AuthResponse = {
   token: string;
   tokenType?: string;
   expiresInMillis?: number;
-  user?: Record<string, any>;
+  user?: Record<string, unknown>;
 };
 
 export async function ensureTestUser(
@@ -23,14 +29,14 @@ export async function ensureTestUser(
   const registerUrl = `${backend.replace(/\/$/, '')}/api/auth/register`;
 
   // try login first
-  let resp: APIResponse | null = null;
+  let resp: APIResponse | null;
   try {
     resp = await page.request.post(loginUrl, { data: { email, password } });
-  } catch (e) {
+  } catch {
     resp = null;
   }
 
-  let body: AuthResponse | null = null;
+  let body: AuthResponse | null;
 
   async function parseJsonSafe(r: APIResponse) {
     const ct = r.headers()['content-type'] ?? '';
