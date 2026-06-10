@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5000 },
   fullyParallel: false,
+  workers: 1,
   retries: 0,
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
