@@ -59,4 +59,24 @@ test.describe('Tasks - system tests', () => {
     const heading = page.locator('h4', { hasText: title }).first();
     await expect(heading).toHaveText(title);
   });
+
+  test('Cannot create task with empty title', async ({ page, baseURL }) => {
+    const base = baseURL ?? 'http://localhost:3000';
+
+    await page.goto(base + '/tasks');
+    await page.waitForSelector('text=Add Task');
+    await page.click('text=Add Task');
+
+    await page.waitForSelector('text=Create New Task');
+
+    // Leave title empty, fill description only
+    await page.fill('#description', 'Should not be created');
+    await page.click('text=Create Task');
+
+    // Modal should still be open
+    await expect(page.locator('text=Create New Task')).toBeVisible({ timeout: 5000 });
+
+    // No task card should appear
+    await expect(page.locator('text=Should not be created')).toHaveCount(0);
+  });
 });
